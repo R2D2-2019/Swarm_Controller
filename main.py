@@ -1,19 +1,17 @@
-from command import command_node
+from controller import controller
 
 # UTILITY FUNCTION
-def list_to_tree(node_names):
-    return " \\ ".join(node_names)
 #
-
+'''
 return_keywords = ["BACK", "RETURN"]
 root = command_node("Root")
 
 
-global_commands = command_node("Global", root)
-help_command = command_node("Help", global_commands)
+
+help_command = command_node("Help")
 help_command.set_function("This is the help menu")
-show_command = command_node("Show", global_commands)
-ping_robot = command_node("Ping robot", global_commands)
+show_command = command_node("Show")
+ping_robot = command_node("Ping robot")
 
 show_robots = command_node("Robots", show_command)
 show_groups = command_node("Groups", show_command)
@@ -24,13 +22,18 @@ global_commands.add(show_command)
 global_commands.add(ping_robot)
 
 root.add(global_commands)
-commands_from_everywhere = {help_command.name : help_command}
+commands_from_everywhere = {help_command.name : help_command, }
 
 current_node = root
-while(True):
-    command_word = input("{}: ".format(list_to_tree(current_node.get_parents())))
-    #Check to see if this is a command callable form anywhere
+'''
 
+controller = controller()
+
+while(True):
+    command_word = controller.collect_input()
+    #Check to see if this is a command callable form anywhere
+    controller.process_command_word(command_word)
+    '''
     if command_word.upper() in commands_from_everywhere:
         last_node = current_node
         current_node = commands_from_everywhere[command_word.upper()]
@@ -60,3 +63,4 @@ while(True):
             print("No commands found")
         print("Type return or back to go back one step")
         print("==========")
+    '''

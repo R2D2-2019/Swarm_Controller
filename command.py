@@ -32,11 +32,14 @@ class command_node:
         else:
             return None
 
-    def do_function(self):
-        if(self.function):
+    def do_function(self, *args):
+        if type(self.function) == str:
             print(self.function)
+        elif callable(self.function):
+            self.function(*args)
         else:
             print("{} has no function".format(self.name))
+            print(self.function)
 
     def set_function(self, tmp_function):
         self.function = tmp_function
