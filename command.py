@@ -1,10 +1,11 @@
 class command_node:
-    def __init__(self, tmp_name, tmp_parent = None):
+    def __init__(self, tmp_name, tmp_controller, tmp_parent = None):
         assert(type(tmp_name) is not None)
         self.name = tmp_name.upper()
         self.children = dict()
         self.parent = tmp_parent
         self.function = None
+        self.controller = tmp_controller
 
     def add(self, tmp_child):
         self.children[tmp_child.name.upper()] = tmp_child
@@ -36,9 +37,8 @@ class command_node:
         if type(self.function) == str:
             print(self.function)
         elif callable(self.function):
-            self.function(*args)
+            self.function(self, *args)
         else:
-            print("{} has no function".format(self.name))
             print(self.function)
 
     def set_function(self, tmp_function):
