@@ -1,20 +1,21 @@
 class command_node:
-    def __init__(self, tmp_name, tmp_controller, tmp_parent = None):
+    def __init__(self, tmp_name, tmp_parent = None):
         assert(type(tmp_name) is not None)
         self.name = tmp_name.upper()
         self.children = dict()
         self.parent = tmp_parent
-        self.function = None
-        self.controller = tmp_controller
 
-    def add(self, tmp_child):
+    def add_child(self, tmp_child):
         self.children[tmp_child.name.upper()] = tmp_child
 
-    def get_parents(self):
+    def get_parent(self):
         if self.parent is None:
             return [self.name]
         else:
             return self.parent.get_parents() + [self.name]
+
+    def set_parent(self, tmp_parent):
+        self.parent = tmp_parent
 
     def show_children(self):
         if( len(self.children) > 0):
@@ -32,14 +33,3 @@ class command_node:
             return self.children[key.upper()]
         else:
             return None
-
-    def do_function(self, *args):
-        if type(self.function) == str:
-            print(self.function)
-        elif callable(self.function):
-            self.function(self, *args)
-        else:
-            print(self.function)
-
-    def set_function(self, tmp_function):
-        self.function = tmp_function

@@ -1,0 +1,29 @@
+{
+    "commands" : [
+        {
+            "target" : "coordinate",
+            "path" : "robot move",
+            "parameters" : 
+                [
+                    "x", "y"
+                ]
+
+        },
+        {
+            "target" : "direction",
+            "path" : "robot move",
+            "parameters" : 
+                [
+                    "direction", "distance"
+                ]
+        },
+        {
+            "target" : "amaze",
+            "path" : "robot dance",
+            "parameters" : 
+                [
+                    
+                ]
+        }
+    ]
+}
