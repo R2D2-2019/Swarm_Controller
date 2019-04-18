@@ -1,5 +1,5 @@
-from controller import controller
+from cli_controller import CLIController
 
-controller = controller(["commands.json"])
+controller = CLIController(["commands.json"])
 
-print("SLAAAAAAAAAANg")
+controller.start_cli()
