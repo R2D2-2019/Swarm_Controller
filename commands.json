@@ -1,0 +1,29 @@
+{
+  "commands": [
+    {
+      "target": "coordinate",
+      "path": "robot move",
+      "parameters": [
+        "x",
+        "y"
+      ],
+      "info": "Moves the robot to given coordinate [x,y]."
+    },
+    {
+      "target": "direction",
+      "path": "robot move",
+      "parameters": [
+        "direction",
+        "distance"
+      ],
+      "info": "Moves the robot in a given direction, for a given distance."
+    },
+    {
+      "target": "amaze",
+      "path": "robot dance",
+      "parameters": [
+      ],
+      "info": "JUST DANCE!!!!!."
+    }
+  ]
+}
