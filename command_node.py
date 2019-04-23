@@ -64,3 +64,7 @@ class CommandNode:
             return self.children[key.upper()]
         else:
             return None
+
+
+    def __getitem__(self, index):
+        return self.children[index]

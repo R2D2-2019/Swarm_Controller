@@ -92,13 +92,13 @@ class CLIController:
     @staticmethod
     def print_help(node):
         print(node.name + ":")
-        print("Info: " + node.command_info)
-        if node.parameter_list > 0:
-            print("Parameters: (" + (", ".join(node.parameter_list)) + ")")
+        print("\tInfo: " + node.command_info)
+        if node.parameter_list:
+            print("\tParameters: (" + (", ".join(node.parameter_list)) + ")")
         elif node.get_child_amount() > 0:
-            print("Children: {}".format(", ".join(node.children)))
+            print("\tChildren: {}".format(", ".join(node.children)))
         else:
-            print("This function requires no parameters and has no children")
+            print("\tThis function requires no parameters and has no children")
 
 
     """
@@ -131,8 +131,14 @@ class CLIController:
                 if not is_global:
                     if current_node.has_child(user_word.upper()):
                         current_node = current_node.get_child(user_word.upper())
+
+                    elif len(current_node.parameter_list) > 0:
+                        print("Command called with {} parameters: {}".format(
+                                len(user_command_list[user_command_list.index(user_word):]),
+                                "(" + ",".join(user_command_list[user_command_list.index(user_word):]) + ")"
+                        ))
+                        break
+
                     else:
-                        print(
-                            "Command {} not found, possible commands: {}".format(
-                                user_word, ", ".join(current_node.children)))
+                        print("Command {} not found, possible commands: {}".format(user_word, ", ".join(current_node.children)))
                         break
