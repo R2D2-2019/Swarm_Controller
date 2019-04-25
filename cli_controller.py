@@ -21,14 +21,12 @@ class CLIController:
         self.command_file_list = command_file_list
         self.load_tree()
 
-
-    """ 
+    """
     Loads all files into command structure
     """
     def load_tree(self):
         for file in self.command_file_list:
             self.load_commands(file)
-
 
     """
     Loads a single JSON file into command structure
@@ -52,28 +50,28 @@ class CLIController:
 
                     for path_piece in command["path"].split(" "):
                         for command_type in self.global_commands:
-                            if path_piece.upper() in self.global_commands[ command_type]:
+                            if path_piece.upper() in self.global_commands[command_type]:
                                 exit("Used keyword {} as target. Using keywords is prohibited!".format(command["target"]))
 
                         # If the current path info already exists, traverse the tree
                         # Else, add the missing link
 
-                        if current_node.has_child(path_piece):
-                            current_node = current_node.get_child(path_piece)
+                        if path_piece.upper() in current_node:
+                            current_node = current_node[path_piece.upper()]
                         else:
                             new_node = CommandNode(path_piece, current_node)
                             new_node.set_parent(current_node)
-                            current_node.add_child(new_node)
+                            current_node[new_node.name] = new_node
                             current_node = new_node
 
                     # After all the missing links in the tree are made, add the command
                     target_node = CommandNode(
                         command["target"],
-                        parameter_list = command["parameters"],
-                        command_info = command["info"]
+                        parameter_list=command["parameters"],
+                        command_info=command["info"]
                     )
                     target_node.set_parent(current_node)
-                    current_node.add_child(target_node)
+                    current_node[target_node.name] = target_node
             except KeyError as error:
                 print("Key {} was not found".format(error))
 
@@ -85,7 +83,6 @@ class CLIController:
     def make_path_string(path_list):
         return ' / '.join(path_list) + ":"
 
-
     """
     Prints the info and any children or parameters of the node.
     """
@@ -95,14 +92,13 @@ class CLIController:
         print("\tInfo: " + node.command_info)
         if node.parameter_list:
             print("\tParameters: (" + (", ".join(node.parameter_list)) + ")")
-        elif node.get_child_amount() > 0:
-            print("\tChildren: {}".format(", ".join(node.children)))
+        elif len(node) > 0:
+            print("\tChildren: {}".format(", ".join(node[n].name.lower() for n in node.keys())))
         else:
             print("\tThis function requires no parameters and has no children")
 
-
     """
-    Starts an infinite loop (until exit command is called) which polls for input 
+    Starts an infinite loop (until exit command is called) which polls for input
     """
     def start_cli(self):
         current_node = self.root_node
@@ -129,13 +125,13 @@ class CLIController:
 
                 # Step 2: Check for children
                 if not is_global:
-                    if current_node.has_child(user_word.upper()):
-                        current_node = current_node.get_child(user_word.upper())
+                    if user_word.upper() in current_node:
+                        current_node = current_node[user_word.upper()]
 
                     elif len(current_node.parameter_list) > 0:
                         print("Command called with {} parameters: {}".format(
-                                len(user_command_list[user_command_list.index(user_word):]),
-                                "(" + ",".join(user_command_list[user_command_list.index(user_word):]) + ")"
+                            len(user_command_list[user_command_list.index(user_word):]),
+                            "(" + ",".join(user_command_list[user_command_list.index(user_word):]) + ")"
                         ))
                         break
 
