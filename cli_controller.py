@@ -12,10 +12,10 @@ class CLIController:
         # These function as preserved keywords, do not use these names in commands
 
         self.global_commands = {
-            "exit": ["EXIT", "LEAVE", "QUIT", "Q"],
-            "help": ["HELP"],
-            "back": ["BACK", "RETURN"],
-            "root": ["ROOT"]
+            "exit": {"EXIT", "LEAVE", "QUIT", "Q"},
+            "help": {"HELP"},
+            "back": {"BACK", "RETURN"},
+            "root": {"ROOT"}
         }
         self.module_commands = []
         self.command_file_list = command_file_list
@@ -34,46 +34,47 @@ class CLIController:
     def load_commands(self, file):
         with open(file, "r") as json_file:
             data = json.load(json_file)
-            try:
 
-                # Check how far the path already exists
-                # - If the command has some of the preserved keywords, the program exits.
-                # - Any missing links in the tree will be added
+        try:
 
-                for command in data["commands"]:
-                    for command_type in self.global_commands:
-                        if command["target"].upper() in self.global_commands[command_type]:
-                            exit("Used keyword {} as target. Using keywords is prohibited!".format(command["target"]))
-                    current_node = self.root_node
+            # Check how far the path already exists
+            # - If the command has some of the preserved keywords, the program exits.
+            # - Any missing links in the tree will be added
+            prohibited_keywords = set().union(*self.global_commands.values())
 
-                    # Per path checking if it has a child
+            for command in data["commands"]:
+                command["target"] = command["target"].upper()
+                if command["target"] in prohibited_keywords:
+                    exit("Used keyword {} as target. Using keywords is prohibited!".format(command["target"]))
+                current_node = self.root_node
 
-                    for path_piece in command["path"].split(" "):
-                        for command_type in self.global_commands:
-                            if path_piece.upper() in self.global_commands[command_type]:
-                                exit("Used keyword {} as target. Using keywords is prohibited!".format(command["target"]))
+                # Per path checking if it has a child
+                command["path"] = command["path"].upper()
+                for path_piece in command["path"].split(" "):
+                    if path_piece in prohibited_keywords:
+                        exit("Used keyword {} as target. Using keywords is prohibited!".format(command["target"]))
 
-                        # If the current path info already exists, traverse the tree
-                        # Else, add the missing link
+                    # If the current path info already exists, traverse the tree
+                    # Else, add the missing link
 
-                        if path_piece.upper() in current_node:
-                            current_node = current_node[path_piece.upper()]
-                        else:
-                            new_node = CommandNode(path_piece, current_node)
-                            new_node.set_parent(current_node)
-                            current_node[new_node.name] = new_node
-                            current_node = new_node
+                    if path_piece in current_node:
+                        current_node = current_node[path_piece]
+                    else:
+                        new_node = CommandNode(path_piece, current_node)
+                        new_node.set_parent(current_node)
+                        current_node[new_node.name] = new_node
+                        current_node = new_node
 
-                    # After all the missing links in the tree are made, add the command
-                    target_node = CommandNode(
-                        command["target"],
-                        parameter_list=command["parameters"],
-                        command_info=command["info"]
-                    )
-                    target_node.set_parent(current_node)
-                    current_node[target_node.name] = target_node
-            except KeyError as error:
-                print("Key {} was not found".format(error))
+                # After all the missing links in the tree are made, add the command
+                target_node = CommandNode(
+                    command["target"],
+                    parameter_list=command["parameters"],
+                    command_info=command["info"]
+                )
+                target_node.set_parent(current_node)
+                current_node[target_node.name] = target_node
+        except KeyError as error:
+            print("Key {} was not found".format(error))
 
     """
     Joins given list and appends a ':'
@@ -105,7 +106,7 @@ class CLIController:
         while True:
             path_list = current_node.get_branch_names()
             path_string = self.make_path_string(path_list)
-            user_command = input(path_string)
+            user_command = input(path_string + " ")
             user_command_list = user_command.split(" ")
             for user_word in user_command_list:
 
@@ -119,7 +120,8 @@ class CLIController:
                         elif command_type == "help":
                             self.print_help(current_node)
                         elif command_type == "back":
-                            current_node = current_node.parent
+                            if current_node.parent:
+                                current_node = current_node.parent
                         elif command_type == "root":
                             current_node = self.root_node
 
@@ -136,5 +138,5 @@ class CLIController:
                         break
 
                     else:
-                        print("Command {} not found, possible commands: {}".format(user_word, ", ".join(current_node.children)))
+                        print("Command {} not found, possible commands: {}".format(user_word, ", ".join(node.name for node in current_node.values())))
                         break
