@@ -4,7 +4,7 @@ import queue
 
 from client.comm import BaseComm
 
-from command_node import CommandNode
+from module.command_node import CommandNode
 
 
 class CLIController:
@@ -180,4 +180,4 @@ class CLIController:
         if self.input_thread:
             self.input_thread.join()
         self.comm.stop()
-        stopped = True
+        self.stopped = True
