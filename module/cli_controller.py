@@ -129,7 +129,7 @@ class CLIController:
             self.input_thread = threading.Thread(target=self.ask_input, args=(self.input_queue, s,))
             self.input_thread.daemon = True
             self.input_thread.start()
-        else:
+        elif not self.input_queue.empty():
             user_command_list = self.input_queue.get().split(" ")
             for user_word in user_command_list:
 
