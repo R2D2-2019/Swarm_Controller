@@ -8,10 +8,11 @@ from module.command_node import CommandNode
 
 
 class CLIController:
-    """
-    Filenames given have to be JSON files.
-    """
-    def __init__(self, comm:BaseComm, command_file_list=None):
+
+    def __init__(self, comm: BaseComm, command_file_list=None):
+        """
+        Filenames given have to be JSON files.
+        """
         self.comm = comm
         self.root_node = CommandNode("ROOT")
 
@@ -32,17 +33,19 @@ class CLIController:
 
         self.stopped = False
 
-    """
-    Loads all files into command structure
-    """
+
     def load_tree(self):
+        """
+        Loads all files into command structure
+        """
         for file in self.command_file_list:
             self.load_commands(file)
 
-    """
-    Loads a single JSON file into command structure
-    """
+
     def load_commands(self, file):
+        """
+        Loads a single JSON file into command structure
+        """
         with open(file, "r") as json_file:
             data = json.load(json_file)
 
@@ -89,19 +92,21 @@ class CLIController:
 
         self.current_node = self.root_node
 
-    """
-    Joins given list and appends a ':'
-    Expects a list
-    """
+
     @staticmethod
     def make_path_string(path_list):
+        """
+        Joins given list and appends a ':'
+        Expects a list
+        """
         return ' / '.join(path_list) + ":"
 
-    """
-    Prints the info and any children or parameters of the node.
-    """
+
     @staticmethod
     def print_help(node):
+        """
+        Prints the info and any children or parameters of the node.
+        """
         print(node.name + ":")
         print("\tInfo: " + node.command_info)
         if node.parameter_list:
@@ -111,19 +116,22 @@ class CLIController:
         else:
             print("\tThis function requires no parameters and has no children")
 
-    """
-    Starts a new thread asking the user for input and writes this input to the given input_queue
-    Optional string for input
-    """
     @staticmethod
-    def ask_input(input_queue:queue.Queue, string=""):
+    def ask_input(input_queue: queue.Queue, string=""):
+        """
+        Starts a new thread asking the user for input and writes this input to the given input_queue
+        Optional string for input
+        """
         i = input(string)
         input_queue.put(i)
 
-    """
-    Starts an infinite loop (until exit command is called) which polls for input
-    """
+
+
     def run_cli(self):
+        """
+        Starts thread asking for input if it is currently not and the input_queue is not filled.
+        Otherwise processes items in the input_queue.
+        """
         if not self.input_thread.isAlive() and self.input_queue.empty():
             s = self.make_path_string(self.current_node.get_branch_names()) + " "
             self.input_thread = threading.Thread(target=self.ask_input, args=(self.input_queue, s,))
@@ -164,19 +172,22 @@ class CLIController:
                         print("Command {} not found, possible commands: {}".format(user_word, ", ".join(node.name for node in self.current_node.values())))
                         break
 
-    """
-    Main loop of the module
-    """
+
     def process(self):
+        """
+        Main loop of the module
+        """
         while self.comm.has_data():
             frame = self.comm.get_data()
 
         self.run_cli()
 
-    """
-    Stops the CLIController
-    """
+
+
     def stop(self):
+        """
+        Stops the CLIController
+        """
         if self.input_thread:
             self.input_thread.join()
         self.comm.stop()
