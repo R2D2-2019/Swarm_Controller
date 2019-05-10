@@ -121,48 +121,59 @@ class CLIController:
         input_queue.put(i)
 
     """
+    Starts a new thread to make nonblocking input possible. And get the current location, after restart this is always just root
+    """
+    def start_thread(self):
+        s = self.make_path_string(self.current_node.get_branch_names()) + " "
+        self.input_thread = threading.Thread(target=self.ask_input, args=(self.input_queue, s))
+        self.input_thread.daemon = True
+        self.input_thread.start()
+
+    """
+    Execute a command depending on text entered
+    """
+    def handle_new_input(self):
+        user_command_list = self.input_queue.get().split(" ")
+        for user_word in user_command_list:
+
+            # Step 1: Check for globals
+            is_global = False
+            for command_type in self.global_commands:
+                if user_word.upper() in self.global_commands[command_type]:
+                    is_global = True
+                    if command_type == "exit":
+                        self.stop()
+                    elif command_type == "help":
+                        self.print_help(self.current_node)
+                    elif command_type == "back":
+                        if self.current_node.parent:
+                            self.current_node = self.current_node.parent
+                    elif command_type == "root":
+                        self.current_node = self.root_node
+
+            # Step 2: Check for children
+            if not is_global:
+                if user_word.upper() in self.current_node:
+                    self.current_node = self.current_node[user_word.upper()]
+
+                elif len(self.current_node.parameter_list) > 0:
+                    print("Command called with {} parameters: {}".format(
+                        len(user_command_list[user_command_list.index(user_word):]),
+                        "(" + ",".join(user_command_list[user_command_list.index(user_word):]) + ")"
+                    ))
+                    break
+
+                else:
+                    print("Command {} not found, possible commands: {}".format(user_word, ", ".join(node.name for node in self.current_node.values())))
+                    break
+    """
     Starts an infinite loop (until exit command is called) which polls for input
     """
     def run_cli(self):
         if not self.input_thread.isAlive() and self.input_queue.empty():
-            s = self.make_path_string(self.current_node.get_branch_names()) + " "
-            self.input_thread = threading.Thread(target=self.ask_input, args=(self.input_queue, s,))
-            self.input_thread.daemon = True
-            self.input_thread.start()
+            self.start_thread()
         elif not self.input_queue.empty():
-            user_command_list = self.input_queue.get().split(" ")
-            for user_word in user_command_list:
-
-                # Step 1: Check for globals
-                is_global = False
-                for command_type in self.global_commands:
-                    if user_word.upper() in self.global_commands[command_type]:
-                        is_global = True
-                        if command_type == "exit":
-                            self.stop()
-                        elif command_type == "help":
-                            self.print_help(self.current_node)
-                        elif command_type == "back":
-                            if self.current_node.parent:
-                                self.current_node = self.current_node.parent
-                        elif command_type == "root":
-                            self.current_node = self.root_node
-
-                # Step 2: Check for children
-                if not is_global:
-                    if user_word.upper() in self.current_node:
-                        self.current_node = self.current_node[user_word.upper()]
-
-                    elif len(self.current_node.parameter_list) > 0:
-                        print("Command called with {} parameters: {}".format(
-                            len(user_command_list[user_command_list.index(user_word):]),
-                            "(" + ",".join(user_command_list[user_command_list.index(user_word):]) + ")"
-                        ))
-                        break
-
-                    else:
-                        print("Command {} not found, possible commands: {}".format(user_word, ", ".join(node.name for node in self.current_node.values())))
-                        break
+            self.handle_new_input()
 
     """
     Main loop of the module
