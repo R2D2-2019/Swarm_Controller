@@ -21,14 +21,14 @@ class CLIController:
         # These function as preserved keywords, do not use these names in commands
 
         self.global_commands = {
-            "EXIT":     "exit",
-            "LEAVE":    "exit",
-            "QUIT":     "exit",
-            "Q":        "exit",
-            "HELP":     "help",
-            "BACK":     "back",
-            "RETURN":   "back",
-            "ROOT":     "root"
+            "EXIT":     self.stop,
+            "LEAVE":    self.stop,
+            "QUIT":     self.stop,
+            "Q":        self.stop,
+            "HELP":     self.print_help,
+            "BACK":     self.go_back_in_tree,
+            "RETURN":   self.go_back_in_tree,
+            "ROOT":     self.goto_root
         }
         self.module_commands = []
         self.command_file_list = command_file_list
@@ -104,8 +104,8 @@ class CLIController:
     """
     Prints the info and any children or parameters of the node.
     """
-    @staticmethod
-    def print_help(node):
+    def print_help(self):
+        node = self.current_node
         print(node.name + ":")
         print("\tInfo: " + node.command_info)
         if node.parameter_list:
@@ -133,19 +133,12 @@ class CLIController:
         self.input_thread.daemon = True
         self.input_thread.start()
 
-    """
-    Handle commands that can always be executed
-    """
-    def handle_global_command(self, command_type):
-        if command_type == "exit":
-            self.stop()
-        elif command_type == "help":
-            self.print_help(self.current_node)
-        elif command_type == "back":
-            if self.current_node.parent:
-                self.current_node = self.current_node.parent
-        elif command_type == "root":
-            self.current_node = self.root_node
+    def go_back_in_tree(self):
+        if self.current_node.parent:
+            self.current_node = self.current_node.parent
+
+    def goto_root(self):
+        self.current_node = self.root_node
 
     """
     Execute a command depending on text entered
@@ -154,11 +147,11 @@ class CLIController:
         user_command_list = self.input_queue.get().split(" ")
         for user_word in user_command_list:
 
-            # Step 1: Check for globals
+            # Step 1: Check for global commands
             if user_word.upper() in self.global_commands.keys():
-                self.handle_global_command(self.global_commands[user_word.upper()])
+                self.global_commands[user_word.upper()]()
                     
-            # Step 2: Check for children
+            # Step 2: Check for location(in tree structure) specific commands
             else:
                 if user_word.upper() in self.current_node:
                     self.current_node = self.current_node[user_word.upper()]
