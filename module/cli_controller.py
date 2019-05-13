@@ -33,6 +33,7 @@ class CLIController:
         self.module_commands = []
         self.command_file_list = command_file_list
         self.load_tree()
+        self.current_node = self.root_node
 
         self.stopped = False
 
@@ -41,12 +42,12 @@ class CLIController:
     """
     def load_tree(self):
         for file in self.command_file_list:
-            self.load_commands(file)
+            self.load_commands(file, self.root_node)
 
     """
     Loads a single JSON file into command structure
     """
-    def load_commands(self, file):
+    def load_commands(self, file, rootnode):
         with open(file, "r") as json_file:
             data = json.load(json_file)
 
@@ -57,11 +58,13 @@ class CLIController:
             # - Any missing links in the tree will be added
             prohibited_keywords = set().union(*self.global_commands.keys())
 
+            command_tree_root = CommandNode("command_tree_root")
+
             for command in data["commands"]:
                 command["target"] = command["target"].upper()
                 if command["target"] in prohibited_keywords:
                     exit("Used keyword {} as target. Using keywords is prohibited!".format(command["target"]))
-                current_node = self.root_node
+                current_node = rootnode
 
                 # Per path checking if it has a child
                 command["path"] = command["path"].upper()
@@ -91,7 +94,7 @@ class CLIController:
         except KeyError as error:
             print("Key {} was not found".format(error))
 
-        self.current_node = self.root_node
+        return command_tree_root
 
     """
     Joins given list and appends a ':'
@@ -111,7 +114,7 @@ class CLIController:
         if node.parameter_list:
             print("\tParameters: (" + (", ".join(node.parameter_list)) + ")")
         elif len(node) > 0:
-            print("\tChildren: {}".format(", ".join(node[n].name.lower() for n in node.keys())))
+            print("\tPossible commands: {}".format(", ".join(node[n].name.lower() for n in node.keys())))
         else:
             print("\tThis function requires no parameters and has no children")
 
@@ -150,21 +153,20 @@ class CLIController:
     Handles all non-global commands. Returns false if failed or if a function has been executed(in this case no other commands can be executed after).
     Returns true if another command can be executed after this one
     """
-    def handle_nonglobal_commands(self):
+    def handle_nonglobal_commands(self, user_word, user_command_list):
         if user_word.upper() in self.current_node.keys():
             self.current_node = self.current_node[user_word.upper()]
             return True
 
         elif len(self.current_node.parameter_list) > 0:
-            print("Command called with {} parameters: {}".format(
+            print("\tCommand called with {} parameters: {}".format(
                 len(user_command_list[user_command_list.index(user_word):]),
                 "(" + ",".join(user_command_list[user_command_list.index(user_word):]) + ")"
             ))
-            return False
 
-        else:
-            print("Command {} not found, possible commands: {}".format(user_word, ", ".join(node.name for node in self.current_node.values())))
-            return False
+        elif user_word:
+            print("\tCommand {} not found, type \"help\" for possible commands.".format(user_word))
+        return False
 
     """
     Execute a command depending on text entered
@@ -179,7 +181,7 @@ class CLIController:
                     
             # Step 2: Check for location(in tree structure) specific commands
             else:
-                if not self.handle_nonglobal_commands():
+                if not self.handle_nonglobal_commands(user_word, user_command_list):
                     break
                 
     """
