@@ -21,10 +21,14 @@ class CLIController:
         # These function as preserved keywords, do not use these names in commands
 
         self.global_commands = {
-            "exit": {"EXIT", "LEAVE", "QUIT", "Q"},
-            "help": {"HELP"},
-            "back": {"BACK", "RETURN"},
-            "root": {"ROOT"}
+            "EXIT":     "exit",
+            "LEAVE":    "exit",
+            "QUIT":     "exit",
+            "Q":        "exit",
+            "HELP":     "help",
+            "BACK":     "back",
+            "RETURN":   "back",
+            "ROOT":     "root"
         }
         self.module_commands = []
         self.command_file_list = command_file_list
@@ -51,7 +55,7 @@ class CLIController:
             # Check how far the path already exists
             # - If the command has some of the preserved keywords, the program exits.
             # - Any missing links in the tree will be added
-            prohibited_keywords = set().union(*self.global_commands.values())
+            prohibited_keywords = set().union(*self.global_commands.keys())
 
             for command in data["commands"]:
                 command["target"] = command["target"].upper()
@@ -130,6 +134,20 @@ class CLIController:
         self.input_thread.start()
 
     """
+    Handle commands that can always be executed
+    """
+    def handle_global_command(self, command_type):
+        if command_type == "exit":
+            self.stop()
+        elif command_type == "help":
+            self.print_help(self.current_node)
+        elif command_type == "back":
+            if self.current_node.parent:
+                self.current_node = self.current_node.parent
+        elif command_type == "root":
+            self.current_node = self.root_node
+
+    """
     Execute a command depending on text entered
     """
     def handle_new_input(self):
@@ -137,22 +155,11 @@ class CLIController:
         for user_word in user_command_list:
 
             # Step 1: Check for globals
-            is_global = False
-            for command_type in self.global_commands:
-                if user_word.upper() in self.global_commands[command_type]:
-                    is_global = True
-                    if command_type == "exit":
-                        self.stop()
-                    elif command_type == "help":
-                        self.print_help(self.current_node)
-                    elif command_type == "back":
-                        if self.current_node.parent:
-                            self.current_node = self.current_node.parent
-                    elif command_type == "root":
-                        self.current_node = self.root_node
-
+            if user_word.upper() in self.global_commands.keys():
+                self.handle_global_command(self.global_commands[user_word.upper()])
+                    
             # Step 2: Check for children
-            if not is_global:
+            else:
                 if user_word.upper() in self.current_node:
                     self.current_node = self.current_node[user_word.upper()]
 
