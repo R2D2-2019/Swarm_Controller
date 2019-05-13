@@ -133,12 +133,38 @@ class CLIController:
         self.input_thread.daemon = True
         self.input_thread.start()
 
+    """
+    Go back one node in the tree structure. You cant go back when in root
+    """
     def go_back_in_tree(self):
         if self.current_node.parent:
             self.current_node = self.current_node.parent
 
+    """
+    Go to root in tree structure
+    """
     def goto_root(self):
         self.current_node = self.root_node
+
+    """
+    Handles all non-global commands. Returns false if failed or if a function has been executed(in this case no other commands can be executed after).
+    Returns true if another command can be executed after this one
+    """
+    def handle_nonglobal_commands(self):
+        if user_word.upper() in self.current_node.keys():
+            self.current_node = self.current_node[user_word.upper()]
+            return True
+
+        elif len(self.current_node.parameter_list) > 0:
+            print("Command called with {} parameters: {}".format(
+                len(user_command_list[user_command_list.index(user_word):]),
+                "(" + ",".join(user_command_list[user_command_list.index(user_word):]) + ")"
+            ))
+            return False
+
+        else:
+            print("Command {} not found, possible commands: {}".format(user_word, ", ".join(node.name for node in self.current_node.values())))
+            return False
 
     """
     Execute a command depending on text entered
@@ -153,19 +179,9 @@ class CLIController:
                     
             # Step 2: Check for location(in tree structure) specific commands
             else:
-                if user_word.upper() in self.current_node:
-                    self.current_node = self.current_node[user_word.upper()]
-
-                elif len(self.current_node.parameter_list) > 0:
-                    print("Command called with {} parameters: {}".format(
-                        len(user_command_list[user_command_list.index(user_word):]),
-                        "(" + ",".join(user_command_list[user_command_list.index(user_word):]) + ")"
-                    ))
+                if not self.handle_nonglobal_commands():
                     break
-
-                else:
-                    print("Command {} not found, possible commands: {}".format(user_word, ", ".join(node.name for node in self.current_node.values())))
-                    break
+                
     """
     Starts an infinite loop (until exit command is called) which polls for input
     """
