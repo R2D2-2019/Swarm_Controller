@@ -28,7 +28,7 @@ class CLIController:
             "HELP":     self.print_help,
             "BACK":     self.go_back_in_tree,
             "RETURN":   self.go_back_in_tree,
-            "ROOT":     self.goto_root
+            "ROOT":     self.go_to_root
         }
         self.module_commands = []
         self.command_file_list = command_file_list
@@ -47,7 +47,7 @@ class CLIController:
     """
     Loads a single JSON file into command structure
     """
-    def load_commands(self, file, rootnode):
+    def load_commands(self, file, root_node):
         with open(file, "r") as json_file:
             data = json.load(json_file)
 
@@ -64,7 +64,7 @@ class CLIController:
                 command["target"] = command["target"].upper()
                 if command["target"] in prohibited_keywords:
                     exit("Used keyword {} as target. Using keywords is prohibited!".format(command["target"]))
-                current_node = rootnode
+                current_node = root_node
 
                 # Per path checking if it has a child
                 command["path"] = command["path"].upper()
@@ -146,7 +146,7 @@ class CLIController:
     """
     Go to root in tree structure
     """
-    def goto_root(self):
+    def go_to_root(self):
         self.current_node = self.root_node
 
     """
