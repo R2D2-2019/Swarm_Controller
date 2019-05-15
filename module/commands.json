@@ -2,7 +2,7 @@
   "commands": [
     {
       "target": "coordinate",
-      "path": "robot move",
+      "path": "robot",
       "parameters": [
         "x",
         "y"
@@ -11,7 +11,7 @@
     },
     {
       "target": "direction",
-      "path": "robot move",
+      "path": "robot",
       "parameters": [
         "direction",
         "distance"
@@ -20,7 +20,7 @@
     },
     {
       "target": "amaze",
-      "path": "robot dance",
+      "path": "robot",
       "parameters": [
       ],
       "info": "JUST DANCE!!!!!."

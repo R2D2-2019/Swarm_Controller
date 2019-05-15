@@ -22,14 +22,19 @@ class CLIController:
         # These function as preserved keywords, do not use these names in commands
 
         self.global_commands = {
-            "exit": {"EXIT", "LEAVE", "QUIT", "Q"},
-            "help": {"HELP"},
-            "back": {"BACK", "RETURN"},
-            "root": {"ROOT"}
+            "EXIT":     self.stop,
+            "LEAVE":    self.stop,
+            "QUIT":     self.stop,
+            "Q":        self.stop,
+            "HELP":     self.print_help,
+            "BACK":     self.go_back_in_tree,
+            "RETURN":   self.go_back_in_tree,
+            "ROOT":     self.go_to_root
         }
         self.module_commands = []
         self.command_file_list = command_file_list
         self.load_tree()
+        self.current_node = self.root_node
 
         self.stopped = False
 
@@ -39,10 +44,9 @@ class CLIController:
         Loads all files into command structure
         """
         for file in self.command_file_list:
-            self.load_commands(file)
+            self.load_commands(file, self.root_node)
 
-
-    def load_commands(self, file):
+    def load_commands(self, file, root_node):
         """
         Loads a single JSON file into command structure
         """
@@ -54,13 +58,15 @@ class CLIController:
             # Check how far the path already exists
             # - If the command has some of the preserved keywords, the program exits.
             # - Any missing links in the tree will be added
-            prohibited_keywords = set().union(*self.global_commands.values())
+            prohibited_keywords = set().union(*self.global_commands.keys())
+
+            command_tree_root = CommandNode("command_tree_root")
 
             for command in data["commands"]:
                 command["target"] = command["target"].upper()
                 if command["target"] in prohibited_keywords:
                     exit("Used keyword {} as target. Using keywords is prohibited!".format(command["target"]))
-                current_node = self.root_node
+                current_node = root_node
 
                 # Per path checking if it has a child
                 command["path"] = command["path"].upper()
@@ -90,7 +96,7 @@ class CLIController:
         except KeyError as error:
             print("Key {} was not found".format(error))
 
-        self.current_node = self.root_node
+        return command_tree_root
 
 
     @staticmethod
@@ -101,9 +107,8 @@ class CLIController:
         """
         return ' / '.join(path_list) + ":"
 
-
-    @staticmethod
-    def print_help(node):
+    def print_help(self):
+        node = self.current_node
         """
         Prints the info and any children or parameters of the node.
         """
@@ -112,7 +117,7 @@ class CLIController:
         if node.parameter_list:
             print("\tParameters: (" + (", ".join(node.parameter_list)) + ")")
         elif len(node) > 0:
-            print("\tChildren: {}".format(", ".join(node[n].name.lower() for n in node.keys())))
+            print("\tPossible commands: {}".format(", ".join(node[n].name.lower() for n in node.keys())))
         else:
             print("\tThis function requires no parameters and has no children")
 
@@ -125,52 +130,75 @@ class CLIController:
         i = input(string)
         input_queue.put(i)
 
+    """
+    Starts a new thread to make nonblocking input possible. And get the current location, after restart this is always just root
+    """
+    def start_thread(self):
+        s = self.make_path_string(self.current_node.get_branch_names()) + " "
+        self.input_thread = threading.Thread(target=self.ask_input, args=(self.input_queue, s))
+        self.input_thread.daemon = True
+        self.input_thread.start()
 
+    """
+    Go back one node in the tree structure. You cant go back when in root
+    """
+    def go_back_in_tree(self):
+        if self.current_node.parent:
+            self.current_node = self.current_node.parent
 
+    """
+    Go to root in tree structure
+    """
+    def go_to_root(self):
+        self.current_node = self.root_node
+
+    """
+    Handles all non-global commands. Returns false if failed or if a function has been executed(in this case no other commands can be executed after).
+    Returns true if another command can be executed after this one
+    """
+    def handle_nonglobal_commands(self, user_word, user_command_list):
+        if user_word.upper() in self.current_node.keys():
+            self.current_node = self.current_node[user_word.upper()]
+            return True
+
+        elif len(self.current_node.parameter_list) > 0:
+            print("\tCommand called with {} parameters: {}".format(
+                len(user_command_list[user_command_list.index(user_word):]),
+                "(" + ",".join(user_command_list[user_command_list.index(user_word):]) + ")"
+            ))
+
+        elif user_word:
+            print("\tCommand {} not found, type \"help\" for possible commands.".format(user_word))
+        return False
+
+    """
+    Execute a command depending on text entered
+    """
+    def handle_new_input(self):
+        user_command_list = self.input_queue.get().split(" ")
+        for user_word in user_command_list:
+
+            # Step 1: Check for global commands
+            if user_word.upper() in self.global_commands.keys():
+                self.global_commands[user_word.upper()]()
+                    
+            # Step 2: Check for location(in tree structure) specific commands
+            else:
+                if not self.handle_nonglobal_commands(user_word, user_command_list):
+                    break
+                
+    """
+    Starts an infinite loop (until exit command is called) which polls for input
+    """
     def run_cli(self):
         """
         Starts thread asking for input if it is currently not and the input_queue is not filled.
         Otherwise processes items in the input_queue.
         """
         if not self.input_thread.isAlive() and self.input_queue.empty():
-            s = self.make_path_string(self.current_node.get_branch_names()) + " "
-            self.input_thread = threading.Thread(target=self.ask_input, args=(self.input_queue, s,))
-            self.input_thread.daemon = True
-            self.input_thread.start()
+            self.start_thread()
         elif not self.input_queue.empty():
-            user_command_list = self.input_queue.get().split(" ")
-            for user_word in user_command_list:
-
-                # Step 1: Check for globals
-                is_global = False
-                for command_type in self.global_commands:
-                    if user_word.upper() in self.global_commands[command_type]:
-                        is_global = True
-                        if command_type == "exit":
-                            self.stop()
-                        elif command_type == "help":
-                            self.print_help(self.current_node)
-                        elif command_type == "back":
-                            if self.current_node.parent:
-                                self.current_node = self.current_node.parent
-                        elif command_type == "root":
-                            self.current_node = self.root_node
-
-                # Step 2: Check for children
-                if not is_global:
-                    if user_word.upper() in self.current_node:
-                        self.current_node = self.current_node[user_word.upper()]
-
-                    elif len(self.current_node.parameter_list) > 0:
-                        print("Command called with {} parameters: {}".format(
-                            len(user_command_list[user_command_list.index(user_word):]),
-                            "(" + ",".join(user_command_list[user_command_list.index(user_word):]) + ")"
-                        ))
-                        break
-
-                    else:
-                        print("Command {} not found, possible commands: {}".format(user_word, ", ".join(node.name for node in self.current_node.values())))
-                        break
+            self.handle_new_input()
 
 
     def process(self):
