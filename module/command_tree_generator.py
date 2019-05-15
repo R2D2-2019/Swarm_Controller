@@ -42,14 +42,15 @@ def add_command_from_json(json_command, root_node, prohibited_words):
     """
     add one json command to root node
     """
-    prohibited_keywords = set().union(prohibited_words)
+    if prohibited_words:
+        prohibited_keywords = set().union(prohibited_words)
     json_command["target"] = json_command["target"].upper()
     current_node = root_node
 
     # Per path checking if it has a child
     json_command["category"] = json_command["category"].upper()
     for path_piece in json_command["category"].split(" "):
-        if path_piece in prohibited_keywords:
+        if prohibited_words and path_piece in prohibited_keywords:
             exit("Used keyword {} as target. Using keywords is prohibited!".format(command["target"]))
 
         # If the current path info already exists, traverse the tree
@@ -68,13 +69,14 @@ def add_command_from_json(json_command, root_node, prohibited_words):
     add_command(current_node, json_command["target"], json_command["parameters"], json_command["info"])
 
 
-def load_commands(file, root_node, prohibited_words):
+def load_commands( root_node, prohibited_words=None, file=None):
     """
     Loads a single JSON file into command structure
     And loads all the frames from common.frames.py to the command structure
     """
-    with open(file, "r") as json_file:
-        data = json.load(json_file)
+    if file:
+        with open(file, "r") as json_file:
+            data = json.load(json_file)
     try:
         # Add all commands from previously collected data
         for command in data["commands"]:
