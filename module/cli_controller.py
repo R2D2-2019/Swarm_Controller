@@ -69,7 +69,6 @@ class CLIController:
                 parameter_list=inspect.getfullargspec(command[1].set_data).annotations,
                 command_info=command[1].DESCRIPTION
             )
-            print("initialised " + command[0][5:])
             target_node.set_parent(current_node)
             current_node[target_node.name] = target_node
 
@@ -107,7 +106,6 @@ class CLIController:
             parameter_list=json_command["parameters"],
             command_info=json_command["info"]
         )
-        print("initialised " + json_command["target"].lower())
         target_node.set_parent(current_node)
         current_node[target_node.name] = target_node
 
