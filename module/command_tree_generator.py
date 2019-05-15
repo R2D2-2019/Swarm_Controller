@@ -4,6 +4,7 @@ import inspect
 import common.frames
 
 from module.command_node import CommandNode
+from module.frame_functions import get_frames_with_description
 
 
 def add_command(parent, name, parameters, description):
@@ -24,13 +25,11 @@ def add_frame_commands(root_node):
     """
     #check if robot already exists, otherwise create it
     if not 'ROBOT' in root_node:
-        root_node["ROBOT"] = CommandNode("ROBOT")          
+        root_node["ROBOT"] = CommandNode("ROBOT")
     current_node = root_node["ROBOT"]
 
-    #get class information from common.frames and removes files without a description
-    frames = inspect.getmembers(common.frames, lambda member: inspect.isclass(member) and member.__module__ == 'common.frames')
-    commands = [frame for frame in frames if frame[1].DESCRIPTION ]
-    
+    commands = get_frames_with_description(common.frames)
+
     #add all commands to root node
     for command in commands:
         name = command[0][5:]
