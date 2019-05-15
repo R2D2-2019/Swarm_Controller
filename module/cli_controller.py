@@ -1,12 +1,11 @@
-import json
 import threading
 import queue
-import inspect
 
 import common.frames
 from client.comm import BaseComm
 
 from module.command_node import CommandNode
+from module.command_tree_generator import load_commands
 
 
 class CLIController:
@@ -46,86 +45,7 @@ class CLIController:
         Loads all files into command structure
         """
         for file in self.command_file_list:
-            self.load_commands(file, self.root_node)
-
-    def add_frame_commands(self, root_node):
-        """
-        Adds all commands from the common.frames file
-        """
-        #check if robot already exists, otherwise create it
-        if not 'ROBOT' in root_node:
-            root_node["ROBOT"] = CommandNode("ROBOT")          
-        current_node = root_node["ROBOT"]
-
-        #get class information from common.frames
-        frames = inspect.getmembers(common.frames, lambda member: inspect.isclass(member) and member.__module__ == 'common.frames')
-        #removes files without a desciption
-        commands = [frame for frame in frames if frame[1].DESCRIPTION ]
-        
-        #add all commands to root node
-        for command in commands:
-            target_node = CommandNode(
-                command[0][5:],
-                parameter_list=inspect.getfullargspec(command[1].set_data).annotations,
-                command_info=command[1].DESCRIPTION
-            )
-            target_node.set_parent(current_node)
-            current_node[target_node.name] = target_node
-
-    def add_command_from_json(self, json_command, root_node):
-        """
-        add one json command to root node
-        THE GIVEN COMMAND MUST COME FROM A JSON FILE OTHERWISE THIS FUNCTION WILL NOT WORK
-        """
-        prohibited_keywords = set().union(*self.global_commands.keys())
-        json_command["target"] = json_command["target"].upper()
-        if json_command["target"] in prohibited_keywords:
-            exit("Used keyword {} as target. Using keywords is prohibited!".format(json_command["target"]))
-        current_node = root_node
-
-        # Per path checking if it has a child
-        json_command["path"] = json_command["path"].upper()
-        for path_piece in json_command["path"].split(" "):
-            if path_piece in prohibited_keywords:
-                exit("Used keyword {} as target. Using keywords is prohibited!".format(command["target"]))
-
-            # If the current path info already exists, traverse the tree
-            # Else, add the missing link
-
-            if path_piece in current_node:
-                current_node = current_node[path_piece]
-            else:
-                new_node = CommandNode(path_piece, current_node)
-                new_node.set_parent(current_node)
-                current_node[new_node.name] = new_node
-                current_node = new_node
-
-        # After all the missing links in the tree are made, add the command
-        target_node = CommandNode(
-            json_command["target"],
-            parameter_list=json_command["parameters"],
-            command_info=json_command["info"]
-        )
-        target_node.set_parent(current_node)
-        current_node[target_node.name] = target_node
-
-
-    def load_commands(self, file, root_node):
-        """
-        Loads a single JSON file into command structure
-        And loads all the frames from common.frames.py to the command structure
-        """
-        with open(file, "r") as json_file:
-            data = json.load(json_file)
-        try:
-            # Add all commands from previously collected data
-            for command in data["commands"]:
-                self.add_command_from_json(command, root_node)
-        except KeyError as error:
-            print("Key {} was not found".format(error))
-
-        # Add all commands from the cpp frames
-        self.add_frame_commands(root_node)
+            load_commands(file, self.root_node, self.global_commands)
 
     @staticmethod
     def make_path_string(path_list):
