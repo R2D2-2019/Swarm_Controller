@@ -6,7 +6,7 @@ import inspect
 import common.frames
 from client.comm import BaseComm
 
-from modules.swarm_controller.module.command_node import CommandNode
+from module.command_node import CommandNode
 
 
 class CLIController:
