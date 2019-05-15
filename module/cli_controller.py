@@ -32,7 +32,6 @@ class CLIController:
             "RETURN":   self.go_back_in_tree,
             "ROOT":     self.go_to_root
         }
-        self.module_commands = []
         self.command_file_list = command_file_list
         self.load_tree()
         self.current_node = self.root_node
@@ -45,7 +44,7 @@ class CLIController:
         Loads all files into command structure
         """
         for file in self.command_file_list:
-            load_commands(file, self.root_node, self.global_commands)
+            load_commands(self.root_node, self.global_commands, file)
 
     @staticmethod
     def make_path_string(path_list):
