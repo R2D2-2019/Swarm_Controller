@@ -1,3 +1,6 @@
+import threading
+import queue
+
 import common.frames
 from client.comm import BaseComm
 
@@ -14,6 +17,8 @@ class CLIController:
         """
         self.comm = comm
         self.root_node = CommandNode("ROOT")
+        self.input_queue = queue.Queue()
+        self.input_thread = threading.Thread()
 
         # These function as preserved keywords, do not use these names in commands
 
@@ -78,6 +83,34 @@ class CLIController:
         Go to root in tree structure
         """
         self.current_node = self.root_node
+
+    @staticmethod
+    def ask_input(input_queue: queue.Queue, string=""):
+        """
+        Starts a new thread asking the user for input and writes this input to the given input_queue
+        Optional string for input
+        """
+        i = input(string)
+        input_queue.put(i)
+
+    def start_thread(self):
+        """
+        Starts a new thread to make nonblocking input possible. And get the current location, after restart this is always just root
+        """
+        s = self.make_path_string(self.current_node.get_branch_names()) + " "
+        self.input_thread = threading.Thread(target=self.ask_input, args=(self.input_queue, s))
+        self.input_thread.daemon = True
+        self.input_thread.start()
+
+    def check_input(self):
+        """
+        Starts thread asking for input if it is currently not and the input_queue is not filled.
+        Otherwise processes items in the input_queue.
+        """
+        if not self.input_thread.isAlive() and self.input_queue.empty():
+            self.start_thread()
+        elif not self.input_queue.empty():
+            self.input_handler.handle_new_input(self.input_queue.get().split(" "))
                 
     def process(self):
         """
@@ -86,13 +119,13 @@ class CLIController:
         while self.comm.has_data():
             frame = self.comm.get_data()
 
-        self.input_handler.check_input()
+        self.check_input()
 
     def stop(self):
         """
         Stops the CLIController
         """
-        if self.input_handler.input_thread:
-            self.input_handler.input_thread.join()
+        if self.input_thread:
+            self.input_thread.join()
         self.comm.stop()
         self.stopped = True
