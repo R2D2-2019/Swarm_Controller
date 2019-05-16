@@ -8,7 +8,7 @@ def cast_and_send_ui_frame(comm: BaseComm, frame_name: str, params: list, destin
     Creates and sends a FrameUiCommand with parameters frame_name, params and destination.
     """
     frame = FrameUiCommand()
-    frame.set_data(frame_name, params, destination)
+    frame.set_data(frame_name, " ".join(str(param) for param in params), destination)
     comm.send(frame)
 
 
