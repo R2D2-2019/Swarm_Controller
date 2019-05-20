@@ -21,6 +21,5 @@ def get_frames_with_description(mod) -> list:
         mod,
         lambda member: inspect.isclass(member) and member.__module__ == mod.__name__
     )
-    print(frames)
 
     return [frame for frame in frames if frame[1].DESCRIPTION]

@@ -4,12 +4,12 @@ from random import randint
 import signal
 
 from client.comm import Comm
-from modules.swarm_controller.module.cli_controller import CLIController
+from module.cli_controller import CLIController
 
 should_stop = False
 
 def main():
-    module = CLIController(Comm(), ["modules/swarm_controller/module/commands.json"])
+    module = CLIController(Comm(), ["modules/swarm_ui/module/commands.json"])
 
     while not should_stop and not module.stopped:
         module.process()

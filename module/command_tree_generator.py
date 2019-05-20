@@ -3,29 +3,30 @@ import inspect
 
 import common.frames
 
-from module.command_node import CommandNode
+from module.command_node import NodeType, Node
 from module.frame_functions import get_frames_with_description
 
 
-def add_command(parent, name, parameters, description):
+def add_command(parent, name, parameters, description) -> None:
     """
     Add one command with all the required information
     """
-    target_node = CommandNode(
+    target_node = Node(
         name,
+        NodeType.COMMAND,
         parameter_list=parameters,
         command_info=description
     )
     target_node.set_parent(parent)
     parent[target_node.name] = target_node
 
-def add_frame_commands(root_node):
+def add_frame_commands(root_node) -> None:
     """
     Adds all commands from the common.frames file
     """
     #check if robot already exists, otherwise create it
     if not 'ROBOT' in root_node:
-        root_node["ROBOT"] = CommandNode("ROBOT")
+        root_node["ROBOT"] = Node("ROBOT", NodeType.CATEGORY, root_node)
     current_node = root_node["ROBOT"]
 
     commands = get_frames_with_description(common.frames)
@@ -38,7 +39,7 @@ def add_frame_commands(root_node):
         add_command(current_node, name, parameters, description)
 
 
-def add_command_from_json(json_command, root_node, prohibited_words):
+def add_command_from_json(json_command, root_node, prohibited_words) -> None:
     """
     add one json command to root node
     """
@@ -59,7 +60,8 @@ def add_command_from_json(json_command, root_node, prohibited_words):
         if path_piece in current_node:
             current_node = current_node[path_piece]
         else:
-            new_node = CommandNode(path_piece, current_node)
+            # Creates the caterogy if it doesn't exist already
+            new_node = Node(path_piece, NodeType.CATEGORY, current_node)
             new_node.set_parent(current_node)
             current_node[new_node.name] = new_node
             current_node = new_node
@@ -69,7 +71,7 @@ def add_command_from_json(json_command, root_node, prohibited_words):
     add_command(current_node, json_command["target"], json_command["parameters"], json_command["info"])
 
 
-def load_commands( root_node, prohibited_words=None, file=None):
+def load_commands( root_node, prohibited_words=None, file=None) -> None:
     """
     Loads a single JSON file into command structure
     And loads all the frames from common.frames.py to the command structure

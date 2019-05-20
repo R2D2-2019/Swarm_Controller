@@ -4,7 +4,7 @@ import queue
 import common.frames
 from client.comm import BaseComm
 
-from module.command_node import CommandNode
+from module.command_node import NodeType, Node
 from module.command_tree_generator import load_commands
 from module.input_handler import input_handler
 
@@ -16,7 +16,7 @@ class CLIController:
         Filenames given have to be JSON files.
         """
         self.comm = comm
-        self.root_node = CommandNode("ROOT")
+        self.root_node = Node("ROOT", NodeType.ROOT)
         self.input_queue = queue.Queue()
         self.input_thread = threading.Thread()
 
@@ -27,7 +27,6 @@ class CLIController:
             "LEAVE":    self.stop,
             "QUIT":     self.stop,
             "Q":        self.stop,
-            "HELP":     self.print_help,
             "BACK":     self.go_back_in_tree,
             "RETURN":   self.go_back_in_tree,
             "ROOT":     self.go_to_root
@@ -41,7 +40,7 @@ class CLIController:
         self.stopped = False
 
 
-    def load_tree(self):
+    def load_tree(self) -> None:
         """
         Loads all files into command structure
         """
@@ -49,19 +48,18 @@ class CLIController:
             load_commands(self.root_node, self.global_commands, file)
 
     @staticmethod
-    def make_path_string(path_list):
+    def make_path_string(path_list) -> str:
         """
         Joins given list and appends a ':'
         Expects a list
         """
         return ' / '.join(path_list) + ":"
 
-    def print_help(self):
-        node = self.current_node
+    def print_help(self, node) -> None:
         """
         Prints the info and any children or parameters of the node.
         """
-        print(node.name + ":")
+        print('( ' + node.name + ' )')
         print("\tInfo: " + node.command_info)
         if node.parameter_list:
             print("\tParameters: (" + (", ".join(node.parameter_list)) + ")")
@@ -70,39 +68,40 @@ class CLIController:
         else:
             print("\tThis function requires no parameters and has no children")
 
-    def go_back_in_tree(self):
+    def go_back_in_tree(self) -> bool:
         """
         Go back one node in the tree structure. You cant go back when in root
         """
         if self.current_node.parent:
             self.current_node = self.current_node.parent
+            return True
+        return False
 
 
-    def go_to_root(self):
+    def go_to_root(self) -> None:
         """
         Go to root in tree structure
         """
         self.current_node = self.root_node
 
     @staticmethod
-    def ask_input(input_queue: queue.Queue, string=""):
+    def ask_input(input_queue: queue.Queue, string="") -> None:
         """
         Starts a new thread asking the user for input and writes this input to the given input_queue
         Optional string for input
         """
-        i = input(string)
-        input_queue.put(i)
+        input_queue.put(input(string))
 
-    def start_thread(self):
+    def start_thread(self) -> None:
         """
         Starts a new thread to make nonblocking input possible. And get the current location, after restart this is always just root
         """
-        s = self.make_path_string(self.current_node.get_branch_names()) + " "
-        self.input_thread = threading.Thread(target=self.ask_input, args=(self.input_queue, s))
+        path_string = self.make_path_string(self.current_node.get_branch_names()) + " "
+        self.input_thread = threading.Thread(target=self.ask_input, args=(self.input_queue, path_string))
         self.input_thread.daemon = True
         self.input_thread.start()
 
-    def check_input(self):
+    def check_input(self) -> None:
         """
         Starts thread asking for input if it is currently not and the input_queue is not filled.
         Otherwise processes items in the input_queue.
@@ -111,8 +110,8 @@ class CLIController:
             self.start_thread()
         elif not self.input_queue.empty():
             self.input_handler.handle_new_input(self.input_queue.get().split(" "))
-                
-    def process(self):
+
+    def process(self) -> None:
         """
         Main loop of the module
         """
@@ -121,7 +120,7 @@ class CLIController:
 
         self.check_input()
 
-    def stop(self):
+    def stop(self) -> None:
         """
         Stops the CLIController
         """
