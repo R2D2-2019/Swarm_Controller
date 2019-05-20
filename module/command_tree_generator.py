@@ -3,7 +3,7 @@ import inspect
 
 import common.frames
 
-from module.command_node import CommandNode
+from module.command_node import NodeType, Node
 from module.frame_functions import get_frames_with_description
 
 
@@ -11,8 +11,9 @@ def add_command(parent, name, parameters, description):
     """
     Add one command with all the required information
     """
-    target_node = CommandNode(
+    target_node = Node(
         name,
+        NodeType.COMMAND,
         parameter_list=parameters,
         command_info=description
     )
@@ -25,7 +26,7 @@ def add_frame_commands(root_node):
     """
     #check if robot already exists, otherwise create it
     if not 'ROBOT' in root_node:
-        root_node["ROBOT"] = CommandNode("ROBOT")
+        root_node["ROBOT"] = Node("ROBOT", NodeType.CATEGORY, root_node)
     current_node = root_node["ROBOT"]
 
     commands = get_frames_with_description(common.frames)
@@ -59,7 +60,7 @@ def add_command_from_json(json_command, root_node, prohibited_words):
         if path_piece in current_node:
             current_node = current_node[path_piece]
         else:
-            new_node = CommandNode(path_piece, current_node)
+            new_node = Node(path_piece, NodeType.COMMAND, current_node)
             new_node.set_parent(current_node)
             current_node[new_node.name] = new_node
             current_node = new_node

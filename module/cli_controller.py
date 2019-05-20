@@ -4,7 +4,7 @@ import queue
 import common.frames
 from client.comm import BaseComm
 
-from module.command_node import CommandNode
+from module.command_node import NodeType, Node
 from module.command_tree_generator import load_commands
 from module.input_handler import input_handler
 
@@ -16,7 +16,7 @@ class CLIController:
         Filenames given have to be JSON files.
         """
         self.comm = comm
-        self.root_node = CommandNode("ROOT")
+        self.root_node = Node("ROOT", NodeType.ROOT)
         self.input_queue = queue.Queue()
         self.input_thread = threading.Thread()
 
@@ -111,7 +111,7 @@ class CLIController:
             self.start_thread()
         elif not self.input_queue.empty():
             self.input_handler.handle_new_input(self.input_queue.get().split(" "))
-                
+
     def process(self):
         """
         Main loop of the module
