@@ -60,7 +60,8 @@ def add_command_from_json(json_command, root_node, prohibited_words):
         if path_piece in current_node:
             current_node = current_node[path_piece]
         else:
-            new_node = Node(path_piece, NodeType.COMMAND, current_node)
+            # Creates the caterogy if it doesn't exist already
+            new_node = Node(path_piece, NodeType.CATEGORY, current_node)
             new_node.set_parent(current_node)
             current_node[new_node.name] = new_node
             current_node = new_node
