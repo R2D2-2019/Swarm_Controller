@@ -2,7 +2,7 @@
   "commands": [
     {
       "target": "coordinate",
-      "path": "robot",
+      "category": "robot",
       "parameters": [
         "x",
         "y"
@@ -11,7 +11,7 @@
     },
     {
       "target": "direction",
-      "path": "robot",
+      "category": "robot",
       "parameters": [
         "direction",
         "distance"
@@ -19,11 +19,13 @@
       "info": "Moves the robot in a given direction, for a given distance."
     },
     {
-      "target": "amaze",
-      "path": "robot",
+      "target": "group",
+      "category": "swarm",
       "parameters": [
+        "x",
+        "y"
       ],
-      "info": "JUST DANCE!!!!!."
+      "info": "Group entire swarm around one location"
     }
   ]
 }
