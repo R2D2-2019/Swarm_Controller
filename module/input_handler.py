@@ -36,11 +36,31 @@ class input_handler():
             return False
 
         if self.cli_controller.current_node[user_word.upper()].type == NodeType.COMMAND:
-            if len(self.cli_controller.current_node[user_word.upper()].parameter_list) > 0:
-                print("\tCommand called with {} parameters: {}".format(
-                    len(user_command_list[user_command_list.index(user_word) + 1:]),
-                    "(" + ", ".join(user_command_list[user_command_list.index(user_word) + 1:]) + ")"
-                ))
+            user_params = user_command_list[user_command_list.index(user_word) + 1:]
+            command_params = self.cli_controller.current_node[user_word.upper()].parameter_list
+
+            if len(user_params) < len(command_params):
+                print("\tToo few commands.")
+                return
+            elif len(user_params) > len(command_params):
+                print("\tToo many commands")
+                return
+
+            for i, param in enumerate(command_params):
+                try:
+                    if command_params[param] is bool:
+                        if user_params[i].upper() == "TRUE":
+                            user_params[i] = True
+                            continue
+                        elif user_params[i].upper() == "FALSE":
+                            user_params[i] = False
+                            continue
+
+                        user_params[i] = bool(int(user_params[i]))
+                    elif command_params[param] is int:
+                        user_params[i] = int(user_params[i])
+                except ValueError:
+                    print("\tInvalid type for parameter {} '{}', expected '{}'".format(i, param, command_params[param]))
             return True
 
         self.cli_controller.current_node = self.cli_controller.current_node[user_word.upper()]
