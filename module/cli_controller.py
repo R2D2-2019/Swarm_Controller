@@ -34,6 +34,7 @@ class CLIController:
         self.command_file_list = command_file_list
         self.load_tree()
         self.current_node = self.root_node
+        self.selected = ""
 
         self.input_handler = input_handler(self)
 

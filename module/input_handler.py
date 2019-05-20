@@ -1,5 +1,6 @@
 
 from module.command_node import NodeType
+from module.frame_functions import cast_and_send_ui_frame
 
 class input_handler():
     def __init__(self, cli_controller):
@@ -25,6 +26,21 @@ class input_handler():
         except KeyError:
             self.print_command_not_found(param)
 
+    @staticmethod
+    def convert_type(convertable, convert_type):
+        if convert_type is bool:
+            if convertable == "TRUE":
+                convertable = True
+            elif convertable == "FALSE":
+                convertable = False
+            else:
+                convertable = bool(int(convertable))
+
+        elif convert_type is int:
+            convertable = int(convertable)
+
+        return convertable
+
     def handle_nonglobal_commands(self, user_word, user_command_list) -> bool:
         """
         Handles all non-global commands. Returns false if failed or if a function has been executed(in this case no other commands can be executed after).
@@ -39,32 +55,27 @@ class input_handler():
             user_params = user_command_list[user_command_list.index(user_word) + 1:]
             command_params = self.cli_controller.current_node[user_word.upper()].parameter_list
 
-            if len(user_params) < len(command_params):
-                print("\tToo few commands.")
-                return
-            elif len(user_params) > len(command_params):
-                print("\tToo many commands")
-                return
+            if len(user_params) < len(command_params) or len(user_params) > len(command_params):
+                print("\tExpected {} parameters, got {}.".format(len(command_params), len(user_params)))
+                return False
 
+            # Validate if the user paramters are of the correct type. Print invalid type if type is invalid, this code evaluates all parameters.
+            correct_params = True
             for i, param in enumerate(command_params):
                 try:
-                    if command_params[param] is bool:
-                        if user_params[i].upper() == "TRUE":
-                            user_params[i] = True
-                            continue
-                        elif user_params[i].upper() == "FALSE":
-                            user_params[i] = False
-                            continue
-
-                        user_params[i] = bool(int(user_params[i]))
-                    elif command_params[param] is int:
-                        user_params[i] = int(user_params[i])
+                    user_params[i] = self.convert_type(user_params[i], command_params[param])
                 except ValueError:
                     print("\tInvalid type for parameter {} '{}', expected '{}'".format(i, param, command_params[param]))
-            return True
+                    correct_params = False
+
+            if correct_params:
+                print("\tSending command:", user_word, user_params, self.cli_controller.selected)
+                # below function can currently not be called as there is no string packing support in python bus yet
+                # cast_and_send_ui_frame(self.cli_controller.comm, user_word, user_params, self.cli_controller.selected)
+            return False
 
         self.cli_controller.current_node = self.cli_controller.current_node[user_word.upper()]
-        return False
+        return True
 
 
     def handle_new_input(self, input_commands) -> None:
@@ -84,7 +95,7 @@ class input_handler():
 
             # Step 3: Check for location(in tree structure) specific commands
             else:
-                if self.handle_nonglobal_commands(user_word, input_commands):
+                if not self.handle_nonglobal_commands(user_word, input_commands):
                     break
 
 
