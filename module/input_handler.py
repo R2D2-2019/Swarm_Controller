@@ -46,7 +46,7 @@ class input_handler():
                     node = self.cli_controller.current_node
 
                     for param in help_parameters:
-                            node = node[param.upper()]
+                        node = node[param.upper()]
 
                     self.cli_controller.print_help(node)
                 except IndexError:
@@ -56,7 +56,7 @@ class input_handler():
                 break
 
             # Step 2: Check for global commands
-            if user_word.upper() in self.cli_controller.global_commands.keys():
+            elif user_word.upper() in self.cli_controller.global_commands.keys():
                 self.cli_controller.global_commands[user_word.upper()]()
 
             # Step 3: Check for location(in tree structure) specific commands
