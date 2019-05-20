@@ -7,6 +7,9 @@ class input_handler():
 
     @staticmethod
     def print_command_not_found(command: str) -> None:
+        """
+        Prints command not found text with the command parameter.
+        """
         print("\tCommand '{}' not found, type 'help' for possible commands.".format(command))
 
     def handle_nonglobal_commands(self, user_word, user_command_list) -> bool:
@@ -31,16 +34,17 @@ class input_handler():
         return False
 
 
-    def handle_new_input(self, input_commands):
+    def handle_new_input(self, input_commands) -> None:
         """
         Execute a command depending on text entered
         """
         for i, user_word in enumerate(input_commands):
+            # Help is a special case, we need to check this first
             if user_word.upper() == "HELP":
                 try:
                     help_parameters = input_commands[i + 1:]
                     node = self.cli_controller.current_node
-                    
+
                     for param in help_parameters:
                             node = node[param.upper()]
 
@@ -51,11 +55,11 @@ class input_handler():
                     self.print_command_not_found(param)
                 break
 
-            # Step 1: Check for global commands
+            # Step 2: Check for global commands
             if user_word.upper() in self.cli_controller.global_commands.keys():
                 self.cli_controller.global_commands[user_word.upper()]()
 
-            # Step 2: Check for location(in tree structure) specific commands
+            # Step 3: Check for location(in tree structure) specific commands
             else:
                 if self.handle_nonglobal_commands(user_word, input_commands):
                     break

@@ -27,7 +27,7 @@ class Node(dict):
     """
     Gets all names of nodes in this branch in a list, ordered as root first
     """
-    def get_branch_names(self):
+    def get_branch_names(self) -> list:
         if self.parent is None:
             return [self.name]
         else:
@@ -36,5 +36,5 @@ class Node(dict):
     """
     Sets the parent to given parent
     """
-    def set_parent(self, parent):
+    def set_parent(self, parent) -> None:
         self.parent = parent
