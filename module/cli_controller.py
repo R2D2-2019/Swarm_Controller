@@ -96,8 +96,8 @@ class CLIController:
         """
         Starts a new thread to make nonblocking input possible. And get the current location, after restart this is always just root
         """
-        string = self.make_path_string(self.current_node.get_branch_names()) + " "
-        self.input_thread = threading.Thread(target=self.ask_input, args=(self.input_queue, string))
+        path_string = self.make_path_string(self.current_node.get_branch_names()) + " "
+        self.input_thread = threading.Thread(target=self.ask_input, args=(self.input_queue, path_string))
         self.input_thread.daemon = True
         self.input_thread.start()
 

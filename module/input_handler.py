@@ -12,6 +12,19 @@ class input_handler():
         """
         print("\tCommand '{}' not found, type 'help' for possible commands.".format(command))
 
+    def handle_help(self, help_parameters):
+        try:
+            node = self.cli_controller.current_node
+
+            for param in help_parameters:
+                node = node[param.upper()]
+
+            self.cli_controller.print_help(node)
+        except IndexError:
+            self.cli_controller.print_help(self.cli_controller.current_node)
+        except KeyError:
+            self.print_command_not_found(param)
+
     def handle_nonglobal_commands(self, user_word, user_command_list) -> bool:
         """
         Handles all non-global commands. Returns false if failed or if a function has been executed(in this case no other commands can be executed after).
@@ -41,18 +54,8 @@ class input_handler():
         for i, user_word in enumerate(input_commands):
             # Help is a special case, we need to check this first
             if user_word.upper() == "HELP":
-                try:
-                    help_parameters = input_commands[i + 1:]
-                    node = self.cli_controller.current_node
-
-                    for param in help_parameters:
-                        node = node[param.upper()]
-
-                    self.cli_controller.print_help(node)
-                except IndexError:
-                    self.cli_controller.print_help(self.cli_controller.current_node)
-                except KeyError:
-                    self.print_command_not_found(param)
+                help_parameters = input_commands[i + 1:]
+                self.handle_help(help_parameters)
                 break
 
             # Step 2: Check for global commands
