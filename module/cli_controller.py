@@ -61,7 +61,7 @@ class CLIController:
         """
         Prints the info and any children or parameters of the node.
         """
-        print(node.name + ":")
+        print('( ' + node.name + ' )')
         print("\tInfo: " + node.command_info)
         if node.parameter_list:
             print("\tParameters: (" + (", ".join(node.parameter_list)) + ")")
