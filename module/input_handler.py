@@ -5,6 +5,10 @@ class input_handler():
     def __init__(self, cli_controller):
         self.cli_controller = cli_controller
 
+    @staticmethod
+    def print_command_not_found(command: str) -> None:
+        print("\tCommand '{}' not found, type 'help' for possible commands.".format(command))
+
     def handle_nonglobal_commands(self, user_word, user_command_list) -> bool:
         """
         Handles all non-global commands. Returns false if failed or if a function has been executed(in this case no other commands can be executed after).
@@ -12,7 +16,7 @@ class input_handler():
         """
 
         if user_word.upper() not in self.cli_controller.current_node.keys():
-            print("\tCommand '{}' not found, type 'help' for possible commands.".format(user_word))
+            self.print_command_not_found(user_word)
             return False
 
         if self.cli_controller.current_node[user_word.upper()].type == NodeType.COMMAND:
@@ -31,7 +35,22 @@ class input_handler():
         """
         Execute a command depending on text entered
         """
-        for user_word in input_commands:
+        for i, user_word in enumerate(input_commands):
+            if user_word.upper() == "HELP":
+                try:
+                    help_parameters = input_commands[i + 1:]
+                    node = self.cli_controller.current_node
+                    
+                    for param in help_parameters:
+                            node = node[param.upper()]
+
+                    self.cli_controller.print_help(node)
+                except IndexError:
+                    self.cli_controller.print_help(self.cli_controller.current_node)
+                except KeyError:
+                    self.print_command_not_found(param)
+                break
+
             # Step 1: Check for global commands
             if user_word.upper() in self.cli_controller.global_commands.keys():
                 self.cli_controller.global_commands[user_word.upper()]()

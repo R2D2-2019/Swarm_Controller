@@ -56,8 +56,7 @@ class CLIController:
         """
         return ' / '.join(path_list) + ":"
 
-    def print_help(self):
-        node = self.current_node
+    def print_help(self, node):
         """
         Prints the info and any children or parameters of the node.
         """
