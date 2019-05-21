@@ -1,8 +1,10 @@
 import sys
 sys.path.append("../../")
 
-import module.command_tree_generator as command_tree_generator
+import module.frame_functions as frame_functions
 import module.command_node as command_node
+import module.command_tree_generator as command_tree_generator
+import test_frames
 
 
 # Node
@@ -55,7 +57,7 @@ def test_node_set_parent():
 
     assert child_node.parent == new_root_node
 
-# command_tree_generator
+# command_tree_generator, does not yet test command_tree_generator.load_commands
 def test_add_command():
     root_node = command_node.Node("ROOT")
     command_tree_generator.add_command(
@@ -117,5 +119,13 @@ def test_add_command_from_json():
 
     assert list(root_node.keys()) == []
 
-# Does not yet test command_tree_generator.load_commands
+# frame_functions, test for cast_and_send_ui_frame can't be implemented yet
+# as there is no mock Comm yet.
+def test_get_frames_with_description():
+    for frame in frame_functions.get_frames_with_description(test_frames):
+        assert frame[1].DESCRIPTION
 
+    assert frame_functions.get_frames_with_description(test_frames) == [
+        ("FrameActivityLedState", test_frames.FrameActivityLedState),
+        ("FrameDisplayFilledRectangle", test_frames.FrameDisplayFilledRectangle)
+    ]
