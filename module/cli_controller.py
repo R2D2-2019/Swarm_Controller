@@ -34,7 +34,6 @@ class CLIController:
         self.command_file_list = command_file_list
         self.load_tree()
         self.current_node = self.root_node
-        self.selected = ""
 
         self.input_handler = input_handler(self)
 
@@ -65,7 +64,6 @@ class CLIController:
         Prints the info and any children or parameters of the node.
         """
         print('( ' + node.name + ' )')
-        print("Currently selected robot: {}\n".format(self.target))
         print("\tInfo: " + node.command_info)
         if node.parameter_list:
             print("\tParameters: (" + (", ".join(node.parameter_list)) + ")")
@@ -73,6 +71,8 @@ class CLIController:
             print("\tPossible commands: {}".format(", ".join(node[n].name.lower() for n in node.keys())))
         else:
             print("\tThis function requires no parameters and has no children")
+
+        print("\n\tCurrently selected robot: {}".format(self.target))
 
     def go_back_in_tree(self) -> bool:
         """
@@ -115,7 +115,7 @@ class CLIController:
             self.start_thread()
         elif not self.input_queue.empty():
             self.input_handler.handle_new_input(self.input_queue.get().split(" "))
-            
+
 
     def process(self) -> None:
         """

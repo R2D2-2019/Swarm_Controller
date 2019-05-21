@@ -13,6 +13,18 @@ class input_handler():
         """
         print("\tCommand '{}' not found, type 'help' for possible commands.".format(command))
 
+    @staticmethod
+    def check_amount_parameters(parameters: list, required_amount: int):
+        """
+        compares the length of the parameters list to the required amount,
+        returns true when the length of the parameters is equal to the required amount
+        prints to user if not enough or too many parameters
+        """
+        if len(parameters) < required_amount or len(parameters) > required_amount:
+            print("\tExpected {} parameters, got {}.".format(required_amount, len(parameters)))
+            return False
+        return True
+
     def handle_help(self, help_parameters):
         try:
             node = self.cli_controller.current_node
@@ -25,17 +37,17 @@ class input_handler():
             self.cli_controller.print_help(self.cli_controller.current_node)
         except KeyError:
             self.print_command_not_found(param)
-    
+
     def handle_select(self, select_parameters) -> bool:
-        if len(select_parameters) == 2:
-            self.cli_controller.set_target(select_parameters[1])
-            print("You selected {}".format(select_parameters[1]))
-            return True
-        elif len(select_parameters) > 2:
-            print("Too many arguments")
-        else:
-            print("too few arguments")
-        return False
+        if not self.check_amount_parameters(select_parameters, 1):
+            return False
+        if not select_parameters[0]:
+            print("\tInvalid parameter '{}'".format(select_parameters[0]))
+            return False
+
+        self.cli_controller.set_target(select_parameters[0])
+        print("\tYou selected {}".format(select_parameters[0]))
+        return True
 
     @staticmethod
     def convert_type(convertable, convert_type):
@@ -54,7 +66,8 @@ class input_handler():
 
     def handle_nonglobal_commands(self, user_word, user_command_list) -> bool:
         """
-        Handles all non-global commands. Returns false if failed or if a function has been executed(in this case no other commands can be executed after).
+        Handles all non-global commands. Returns false if failed or
+        if a function has been executed(in this case no other commands can be executed after).
         Returns true if another command can be executed after this one
         """
 
@@ -63,14 +76,17 @@ class input_handler():
             return False
 
         if self.cli_controller.current_node[user_word.upper()].type == NodeType.COMMAND:
+            if not self.cli_controller.target:
+                print("\tNo target selected.")
+                return False
             user_params = user_command_list[user_command_list.index(user_word) + 1:]
             command_params = self.cli_controller.current_node[user_word.upper()].parameter_list
 
-            if len(user_params) < len(command_params) or len(user_params) > len(command_params):
-                print("\tExpected {} parameters, got {}.".format(len(command_params), len(user_params)))
+            if not self.check_amount_parameters(user_params, len(command_params)):
                 return False
 
-            # Validate if the user paramters are of the correct type. Print invalid type if type is invalid, this code evaluates all parameters.
+            # Validate if the user paramters are of the correct type.
+            # Print invalid type if type is invalid, this code evaluates all parameters.
             correct_params = True
             for i, param in enumerate(command_params):
                 try:
@@ -80,7 +96,7 @@ class input_handler():
                     correct_params = False
 
             if correct_params:
-                print("\tSending command:", user_word, user_params, self.cli_controller.selected)
+                print("\tSending command:", user_word, user_params, self.cli_controller.target)
                 # below function can currently not be called as there is no string packing support in python bus yet
                 # cast_and_send_ui_frame(self.cli_controller.comm, user_word, user_params, self.cli_controller.selected)
             return False
@@ -99,14 +115,16 @@ class input_handler():
                 help_parameters = input_commands[i + 1:]
                 self.handle_help(help_parameters)
                 break
+            # set or select is also a special case
             if user_word.upper() == "SET" or user_word.upper() == "SELECT":
-                if self.handle_select(input_commands):
-                    break
-            # Step 2: Check for global commands
+                self.handle_select(input_commands[i + 1:])
+                break
+
+            # Step 3: Check for global commands
             elif user_word.upper() in self.cli_controller.global_commands.keys():
                 self.cli_controller.global_commands[user_word.upper()]()
 
-            # Step 3: Check for location(in tree structure) specific commands
+            # Step 4: Check for location(in tree structure) specific commands
             else:
                 if not self.handle_nonglobal_commands(user_word, input_commands):
                     break
