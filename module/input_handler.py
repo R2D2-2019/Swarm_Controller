@@ -25,6 +25,17 @@ class input_handler():
             self.cli_controller.print_help(self.cli_controller.current_node)
         except KeyError:
             self.print_command_not_found(param)
+    
+    def handle_select(self, select_parameters) -> bool:
+        if len(select_parameters) == 2:
+            self.cli_controller.set_target(select_parameters[1])
+            print("You selected {}".format(select_parameters[1]))
+            return True
+        elif len(select_parameters) > 2:
+            print("Too many arguments")
+        else:
+            print("too few arguments")
+        return False
 
     @staticmethod
     def convert_type(convertable, convert_type):
@@ -88,7 +99,9 @@ class input_handler():
                 help_parameters = input_commands[i + 1:]
                 self.handle_help(help_parameters)
                 break
-
+            if user_word.upper() == "SET" or user_word.upper() == "SELECT":
+                if self.handle_select(input_commands):
+                    break
             # Step 2: Check for global commands
             elif user_word.upper() in self.cli_controller.global_commands.keys():
                 self.cli_controller.global_commands[user_word.upper()]()
