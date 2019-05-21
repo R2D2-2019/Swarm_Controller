@@ -4,6 +4,7 @@ sys.path.append("../../")
 import module.frame_functions as frame_functions
 import module.command_node as command_node
 import module.command_tree_generator as command_tree_generator
+from module.input_handler import input_handler
 import test_frames
 
 
@@ -129,3 +130,9 @@ def test_get_frames_with_description():
         ("FrameActivityLedState", test_frames.FrameActivityLedState),
         ("FrameDisplayFilledRectangle", test_frames.FrameDisplayFilledRectangle)
     ]
+
+# input_handler
+def test_print_command_not_found(capsys):
+    input_handler.print_command_not_found("test_command")
+    assert capsys.readouterr().out == \
+    "\tCommand 'test_command' not found, type 'help' for possible commands.\n"
