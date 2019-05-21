@@ -52,7 +52,7 @@ def add_command_from_json(json_command, root_node, prohibited_words) -> None:
     json_command["category"] = json_command["category"].upper()
     for path_piece in json_command["category"].split(" "):
         if prohibited_words and path_piece in prohibited_keywords:
-            exit("Used keyword {} as target. Using keywords is prohibited!".format(command["target"]))
+            exit("Used keyword {} as target. Using keywords is prohibited!".format(json_command["target"]))
 
         # If the current path info already exists, traverse the tree
         # Else, add the missing link
@@ -71,7 +71,7 @@ def add_command_from_json(json_command, root_node, prohibited_words) -> None:
     add_command(current_node, json_command["target"], json_command["parameters"], json_command["info"])
 
 
-def load_commands( root_node, prohibited_words=None, file=None) -> None:
+def load_commands(root_node, prohibited_words=None, file=None) -> None:
     """
     Loads a single JSON file into command structure
     And loads all the frames from common.frames.py to the command structure
