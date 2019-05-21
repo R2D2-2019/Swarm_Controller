@@ -20,16 +20,16 @@ def add_command(parent, name, parameters, description) -> None:
     target_node.set_parent(parent)
     parent[target_node.name] = target_node
 
-def add_frame_commands(root_node) -> None:
+def add_frame_commands(root_node, mod=common.frames) -> None:
     """
-    Adds all commands from the common.frames file
+    Adds all commands from the mod file
     """
     #check if robot already exists, otherwise create it
     if not 'ROBOT' in root_node:
         root_node["ROBOT"] = Node("ROBOT", NodeType.CATEGORY, root_node)
     current_node = root_node["ROBOT"]
 
-    commands = get_frames_with_description(common.frames)
+    commands = get_frames_with_description(mod)
 
     #add all commands to root node
     for command in commands:
