@@ -38,6 +38,7 @@ class CLIController:
         self.input_handler = input_handler(self)
 
         self.stopped = False
+        self.target = None
 
 
     def load_tree(self) -> None:
@@ -55,11 +56,15 @@ class CLIController:
         """
         return ' / '.join(path_list) + ":"
 
+    def set_target(self, target) -> None:
+        self.target = target
+
     def print_help(self, node) -> None:
         """
         Prints the info and any children or parameters of the node.
         """
         print('( ' + node.name + ' )')
+        print("Currently selected robot: {}\n".format(self.target))
         print("\tInfo: " + node.command_info)
         if node.parameter_list:
             print("\tParameters: (" + (", ".join(node.parameter_list)) + ")")
@@ -83,7 +88,6 @@ class CLIController:
         Go to root in tree structure
         """
         self.current_node = self.root_node
-
     @staticmethod
     def ask_input(input_queue: queue.Queue, string="") -> None:
         """
@@ -110,6 +114,7 @@ class CLIController:
             self.start_thread()
         elif not self.input_queue.empty():
             self.input_handler.handle_new_input(self.input_queue.get().split(" "))
+            
 
     def process(self) -> None:
         """
