@@ -98,7 +98,7 @@ class input_handler():
             if correct_params:
                 print("\tSending command:", user_word, user_params, self.cli_controller.target)
                 # below function can currently not be called as there is no string packing support in python bus yet
-                cast_and_send_ui_frame(self.cli_controller.comm, user_word, user_params, self.cli_controller.target)
+                #cast_and_send_ui_frame(self.cli_controller.comm, user_word, user_params, self.cli_controller.target)
             return False
 
         self.cli_controller.current_node = self.cli_controller.current_node[user_word.upper()]
