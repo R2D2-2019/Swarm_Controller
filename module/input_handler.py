@@ -52,9 +52,9 @@ class input_handler():
     @staticmethod
     def convert_type(convertable, convert_type):
         if convert_type is bool:
-            if convertable == "TRUE":
+            if convertable.upper() == "TRUE":
                 convertable = True
-            elif convertable == "FALSE":
+            elif convertable.upper() == "FALSE":
                 convertable = False
             else:
                 convertable = bool(int(convertable))
@@ -98,7 +98,7 @@ class input_handler():
             if correct_params:
                 print("\tSending command:", user_word, user_params, self.cli_controller.target)
                 # below function can currently not be called as there is no string packing support in python bus yet
-                # cast_and_send_ui_frame(self.cli_controller.comm, user_word, user_params, self.cli_controller.selected)
+                cast_and_send_ui_frame(self.cli_controller.comm, user_word, user_params, self.cli_controller.target)
             return False
 
         self.cli_controller.current_node = self.cli_controller.current_node[user_word.upper()]
@@ -128,6 +128,3 @@ class input_handler():
             else:
                 if not self.handle_nonglobal_commands(user_word, input_commands):
                     break
-
-
-
