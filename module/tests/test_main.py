@@ -102,7 +102,7 @@ def test_add_command_from_json():
     command = {
         "target": "test_command",
         "category": "swarm",
-        "parameters": ["x", "y"],
+        "parameters": ["int x", "int y"],
         "info": "This is a test."
     }
     root_node = command_node.Node("ROOT")

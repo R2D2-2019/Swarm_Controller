@@ -4,8 +4,8 @@
       "target": "move-to-coordinate",
       "category": "robot",
       "parameters": [
-        "x",
-        "y"
+        "int x",
+        "int y"
       ],
       "info": "Moves the robot to given coordinate [x,y]."
     },
@@ -20,8 +20,8 @@
       "target": "group",
       "category": "swarm",
       "parameters": [
-        "x",
-        "y"
+        "int x",
+        "int y"
       ],
       "info": "Group entire swarm around one location"
     },
