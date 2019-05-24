@@ -32,7 +32,7 @@ def add_frame_commands(root_node, mod=common.frames) -> None:
         # indexes everything of the frame name after 'Frame'
         name = command[0][5:]
 
-        # get values from the frame class
+        # get parameters from the frame class
         parameters = inspect.getfullargspec(command[1].set_data).annotations
         description = command[1].DESCRIPTION
 
@@ -44,13 +44,16 @@ def add_command_from_json(json_command, root_node, prohibited_words) -> None:
     add one json command to root node
     """
 
+    if prohibited_words:
+        prohibited_words = set(prohibited_words)
+
     json_command["target"] = json_command["target"].upper()
     current_node = root_node
 
     # Per path checking if it has a child
     json_command["category"] = json_command["category"].upper()
     for path_piece in json_command["category"].split(" "):
-        if prohibited_words and path_piece in set(prohibited_words):
+        if path_piece in set(prohibited_words):
             exit(
                 "Used keyword {} as target. Using keywords is prohibited!".format(
                     json_command["target"]
