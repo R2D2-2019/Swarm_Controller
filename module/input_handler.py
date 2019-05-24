@@ -1,8 +1,8 @@
-
 from module.command_node import NodeType
 from module.frame_functions import cast_and_send_ui_frame
 
-class input_handler():
+
+class input_handler:
     def __init__(self, cli_controller):
         self.cli_controller = cli_controller
 
@@ -79,7 +79,7 @@ class input_handler():
             if not self.cli_controller.target:
                 print("\tNo target selected.")
                 return False
-            user_params = user_command_list[user_command_list.index(user_word) + 1:]
+            user_params = user_command_list[user_command_list.index(user_word) + 1 :]
             command_params = self.cli_controller.current_node[user_word.upper()].parameter_list
 
             if not self.check_amount_parameters(user_params, len(command_params)):
@@ -92,18 +92,21 @@ class input_handler():
                 try:
                     user_params[i] = self.convert_type(user_params[i], command_params[param])
                 except ValueError:
-                    print("\tInvalid type for parameter {} '{}', expected '{}'".format(i, param, command_params[param]))
+                    print(
+                        "\tInvalid type for parameter {} '{}', expected '{}'".format(
+                            i, param, command_params[param]
+                        )
+                    )
                     correct_params = False
 
             if correct_params:
                 print("\tSending command:", user_word, user_params, self.cli_controller.target)
                 # below function can currently not be called as there is no string packing support in python bus yet
-                #cast_and_send_ui_frame(self.cli_controller.comm, user_word, user_params, self.cli_controller.target)
+                # cast_and_send_ui_frame(self.cli_controller.comm, user_word, user_params, self.cli_controller.target)
             return False
 
         self.cli_controller.current_node = self.cli_controller.current_node[user_word.upper()]
         return True
-
 
     def handle_new_input(self, input_commands) -> None:
         """
@@ -112,12 +115,12 @@ class input_handler():
         for i, user_word in enumerate(input_commands):
             # Help is a special case, we need to check this first
             if user_word.upper() == "HELP":
-                help_parameters = input_commands[i + 1:]
+                help_parameters = input_commands[i + 1 :]
                 self.handle_help(help_parameters)
                 break
             # set or select is also a special case
             if user_word.upper() == "SET" or user_word.upper() == "SELECT":
-                self.handle_select(input_commands[i + 1:])
+                self.handle_select(input_commands[i + 1 :])
                 break
 
             # Step 3: Check for global commands

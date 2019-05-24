@@ -18,8 +18,7 @@ def get_frames_with_description(mod) -> list:
     """
     # Get all classes from only mod
     frames = inspect.getmembers(
-        mod,
-        lambda member: inspect.isclass(member) and member.__module__ == mod.__name__
+        mod, lambda member: inspect.isclass(member) and member.__module__ == mod.__name__
     )
 
     return [frame for frame in frames if frame[1].DESCRIPTION]
