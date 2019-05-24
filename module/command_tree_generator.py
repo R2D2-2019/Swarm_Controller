@@ -72,7 +72,8 @@ def add_command_from_json(json_command, root_node, prohibited_words) -> None:
     # After all the missing links in the tree are made, add the command
     parameters = dict()
     for parameter in json_command["parameters"]:
-        parameters[parameter.split()[1]] = eval(parameter.split()[0])
+        parameter = parameter.split()
+        parameters[parameter[1]] = eval(parameter[0])
     add_command(current_node, json_command["target"], parameters, json_command["info"])
 
 
