@@ -6,7 +6,7 @@ class input_handler:
         self.cli_controller = cli_controller
 
     @staticmethod
-    def print_command_not_found(command: str) -> None:
+    def _print_command_not_found(command: str) -> None:
         """
         Prints command not found text with the command parameter.
         """
@@ -17,7 +17,7 @@ class input_handler:
         )
 
     @staticmethod
-    def check_amount_parameters(parameters: list, required_amount: int):
+    def _check_amount_parameters(parameters: list, required_amount: int) -> bool:
         """
         compares the length of the parameters list to the required amount,
         returns true when the length of the parameters is equal to the required amount
@@ -32,32 +32,8 @@ class input_handler:
             return False
         return True
 
-    def handle_help(self, help_parameters):
-        try:
-            node = self.cli_controller.current_node
-
-            for param in help_parameters:
-                node = node[param.upper()]
-
-            self.cli_controller.print_help(node)
-        except IndexError:
-            self.cli_controller.print_help(self.cli_controller.current_node)
-        except KeyError:
-            self.print_command_not_found(param)
-
-    def handle_select(self, select_parameters) -> bool:
-        if not self.check_amount_parameters(select_parameters, 1):
-            return False
-        if not select_parameters[0] in self.cli_controller.possible_targets:
-            print("\tInvalid parameter '{}'".format(select_parameters[0]))
-            return False
-
-        self.cli_controller.set_target(select_parameters[0])
-        print("\tYou selected {}".format(select_parameters[0]))
-        return True
-
     @staticmethod
-    def convert_type(convertable, convert_type):
+    def _convert_type(convertable, convert_type):
         if convert_type is bool:
             if convertable.upper() == "TRUE":
                 convertable = True
@@ -71,6 +47,76 @@ class input_handler:
 
         return convertable
 
+    def handle_select(self, select_parameters) -> None:
+        if not self._check_amount_parameters(select_parameters, 1):
+            return
+        if not select_parameters[0] in self.cli_controller.possible_targets:
+            print("\tInvalid target '{}'".format(select_parameters[0]))
+            return
+
+        self.cli_controller.set_target(select_parameters[0])
+        print("\tYou selected {}".format(select_parameters[0]))
+
+    def handle_help(self, params: list) -> None:
+        """
+        Prints general information and information about the target,
+        or information about a command if given as a parameter
+        """
+
+        # If a parameter is given this prints the information of that parameter
+        if params and self.cli_controller.target:
+            if not self._check_amount_parameters(params, 1):
+                return
+            try:
+                node = self.cli_controller.target[1][params[0].upper()]
+
+                print("( {} )".format(node.name))
+                print("\t" + node.node_info)
+                print(
+                    "\n\tParameters (name: type): {}".format(
+                        ", ".join(
+                            "{}: {}".format(key, value) for key, value in node.items()
+                        )
+                    )
+                )
+            except KeyError:
+                self._print_command_not_found(params[0])
+            return
+
+        # If no parameter is given it prints general information and the selected target's information
+        print("( HELP )")
+        print(
+            "\tPossible targets (name: category): {}".format(
+                ", ".join(
+                    "{}: {}".format(key, value.name)
+                    for key, value in self.cli_controller.possible_targets.items()
+                )
+            )
+        )
+        print(
+            "\tGlobal commands: {}".format(
+                ", ".join(
+                    command for command in self.cli_controller.global_commands.keys()
+                )
+            )
+        )
+
+        if self.cli_controller.target:
+            print(
+                "\n\tCurrently selected {}: {}".format(
+                    self.cli_controller.target[1].name, self.cli_controller.target[0]
+                )
+            )
+            print(
+                "\tTarget specific commands: {}".format(
+                    ", ".join(
+                        command for command in self.cli_controller.target[1].keys()
+                    )
+                )
+            )
+        else:
+            print("\n\tNo target selected.")
+
     def _handle_category_command(self, command, params) -> None:
         """
         Handles all non-global commands. Returns false if failed or
@@ -80,12 +126,12 @@ class input_handler:
         category = self.cli_controller.target[1]
 
         if command not in category:
-            self.print_command_not_found(command)
+            self._print_command_not_found(command)
             return
 
         required_params = category[command]
 
-        if not self.check_amount_parameters(params, len(required_params)):
+        if not self._check_amount_parameters(params, len(required_params)):
             return
 
         # Validate if the user paramters are of the correct type.
@@ -93,7 +139,7 @@ class input_handler:
         correct_params = True
         for i, param in enumerate(required_params):
             try:
-                params[i] = self.convert_type(params[i], required_params[param])
+                params[i] = self._convert_type(params[i], required_params[param])
             except ValueError:
                 print(
                     "\tInvalid type for parameter {} '{}', expected '{}'".format(
@@ -112,7 +158,7 @@ class input_handler:
 
     def _handle_command(self, command: str, params: list):
         if command in self.cli_controller.global_commands:
-            self.cli_controller.global_commands[command](params)
+            self.cli_controller.global_commands[command].execute(params)
         elif self.cli_controller.target:
             self._handle_category_command(command, params)
         else:

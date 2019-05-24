@@ -4,7 +4,7 @@ import queue
 import common.frames
 from client.comm import BaseComm
 
-from module.command_node import Node
+from module.command_node import GlobalCommand
 from module.command_tree_generator import load_commands
 from module.input_handler import input_handler
 
@@ -20,19 +20,27 @@ class CLIController:
         self.input_handler = input_handler(self)
 
         # These function as preserved keywords, do not use these names in commands
-
+        stop = GlobalCommand("EXIT", self.stop, node_info="Exits the CLI interface.")
+        select = GlobalCommand(
+            "SELECT",
+            self.input_handler.handle_select,
+            node_info="Select a target on which to execute commands.",
+        )
         self.global_commands = {
-            "EXIT": self.stop,
-            "LEAVE": self.stop,
-            "QUIT": self.stop,
-            "Q": self.stop,
-            "HELP": self.print_help,
-            "SET": self.set_target,
-            "SELECT": self.set_target,
+            "EXIT": stop,
+            "LEAVE": stop,
+            "QUIT": stop,
+            "Q": stop,
+            "HELP": GlobalCommand(
+                "HELP",
+                self.input_handler.handle_help,
+                node_info="Prints general help or help of given parameter.",
+            ),
+            "SET": select,
+            "SELECT": select,
         }
 
         self.categories = dict()
-        self.current_node = self.categories
 
         self.load_tree(command_file_list)
 
@@ -52,42 +60,8 @@ class CLIController:
         for file in command_file_list:
             load_commands(self.categories, self.global_commands, file)
 
-    def set_target(self, params) -> None:
-        self.target = (params[0].upper(), self.possible_targets[params[0]])
-
-    # should print info of root node (global commands and categories) and of the currently selected target
-    def print_help(self, params: list) -> None:
-        """
-        Prints the info and any children or parameters of the node.
-        """
-        print("( HELP )")
-        print(
-            "\tPossible targets (name: category): {}".format(
-                ", ".join(
-                    "{}: {}".format(key, value.name)
-                    for key, value in self.possible_targets.items()
-                )
-            )
-        )
-        print(
-            "\tGlobal commands: {}".format(
-                ", ".join(command for command in self.global_commands.keys())
-            )
-        )
-
-        if self.target:
-            print(
-                "\n\tCurrently selected {}: {}".format(
-                    self.target[1].name, self.target[0]
-                )
-            )
-            print(
-                "\tTarget specific commands: {}".format(
-                    ", ".join(command for command in self.target[1].keys())
-                )
-            )
-        else:
-            print("\tNo target selected.")
+    def set_target(self, target) -> None:
+        self.target = (target.upper(), self.possible_targets[target])
 
     @staticmethod
     def ask_input(input_queue: queue.Queue, string="") -> None:
