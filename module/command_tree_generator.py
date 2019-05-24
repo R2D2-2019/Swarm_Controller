@@ -29,9 +29,13 @@ def add_frame_commands(root_node, mod=common.frames) -> None:
 
     # add all commands to root node
     for command in commands:
+        # indexes everything of the frame name after 'Frame'
         name = command[0][5:]
+
+        # get parameters from the frame class
         parameters = inspect.getfullargspec(command[1].set_data).annotations
         description = command[1].DESCRIPTION
+
         add_command(current_node, name, parameters, description)
 
 
@@ -39,15 +43,17 @@ def add_command_from_json(json_command, root_node, prohibited_words) -> None:
     """
     add one json command to root node
     """
+
     if prohibited_words:
-        prohibited_keywords = set().union(prohibited_words)
+        prohibited_words = set(prohibited_words)
+
     json_command["target"] = json_command["target"].upper()
     current_node = root_node
 
     # Per path checking if it has a child
     json_command["category"] = json_command["category"].upper()
     for path_piece in json_command["category"].split(" "):
-        if prohibited_words and path_piece in prohibited_keywords:
+        if path_piece in set(prohibited_words):
             exit(
                 "Used keyword {} as target. Using keywords is prohibited!".format(
                     json_command["target"]
@@ -69,7 +75,8 @@ def add_command_from_json(json_command, root_node, prohibited_words) -> None:
     # After all the missing links in the tree are made, add the command
     parameters = dict()
     for parameter in json_command["parameters"]:
-        parameters[parameter.split()[1]] = eval(parameter.split()[0])
+        parameter = parameter.split()
+        parameters[parameter[1]] = eval(parameter[0])
     add_command(current_node, json_command["target"], parameters, json_command["info"])
 
 
