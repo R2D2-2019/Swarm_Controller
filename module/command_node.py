@@ -1,44 +1,21 @@
-from common.common import AutoNumber
+from client.comm import BaseComm
+from common.frames import FrameUiCommand
 
 
-class NodeType(AutoNumber):
-    NONE = ()
-    ROOT = ()
-    CATEGORY = ()
-    COMMAND = ()
-
-
-# Represents a node in a tree, this node knows its parent
 class Node(dict):
-    def __init__(
-        self,
-        name,
-        node_type=NodeType.NONE,
-        parent=None,
-        parameter_list=None,
-        command_info="Currently none available",
-    ):
+    def __init__(self, name, node_info="Currently none available"):
+        self.name = name
+        self.node_info = node_info
 
-        if parameter_list is None:
-            parameter_list = list()
 
-        self.name = name.upper()
-        self.parent = parent
-        self.parameter_list = parameter_list
-        self.command_info = command_info
-        self.type = node_type
+class Command(Node):
+    def __init__(self, name, node_info="Currently none available"):
+        return super().__init__(name, node_info=node_info)
 
-    def get_branch_names(self) -> list:
+    def send(self, comm: BaseComm, params: list, destination: str) -> None:
         """
-        Gets all names of nodes in this branch in a list, ordered as root first
+        Creates and sends a FrameUiCommand with parameters frame_name, params and destination.
         """
-        if self.parent is None:
-            return [self.name]
-        else:
-            return self.parent.get_branch_names() + [self.name]
-
-    def set_parent(self, parent) -> None:
-        """
-        Sets the parent to given parent
-        """
-        self.parent = parent
+        frame = FrameUiCommand()
+        frame.set_data(self.name, " ".join(str(param) for param in params), destination)
+        comm.send(frame)
