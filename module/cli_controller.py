@@ -4,7 +4,7 @@ import queue
 import common.frames
 from client.comm import BaseComm
 
-from module.command_node import NodeType, Node
+from module.command_node import Node
 from module.command_tree_generator import load_commands
 from module.input_handler import input_handler
 
@@ -15,9 +15,9 @@ class CLIController:
         Filenames given have to be JSON files.
         """
         self.comm = comm
-        self.root_node = Node("ROOT", NodeType.ROOT)
         self.input_queue = queue.Queue()
         self.input_thread = threading.Thread()
+        self.input_handler = input_handler(self)
 
         # These function as preserved keywords, do not use these names in commands
 
@@ -26,70 +26,68 @@ class CLIController:
             "LEAVE": self.stop,
             "QUIT": self.stop,
             "Q": self.stop,
-            "BACK": self.go_back_in_tree,
-            "RETURN": self.go_back_in_tree,
-            "ROOT": self.go_to_root,
+            "HELP": self.print_help,
+            "SET": self.set_target,
+            "SELECT": self.set_target,
         }
-        self.command_file_list = command_file_list
-        self.load_tree()
-        self.current_node = self.root_node
 
-        self.input_handler = input_handler(self)
+        self.categories = dict()
+        self.current_node = self.categories
+
+        self.load_tree(command_file_list)
+
+        # this needs to be requested from swarm, for now this is a mock
+        self.possible_targets = {
+            "123": self.categories["ROBOT"],
+            "321": self.categories["ROBOT"],
+        }
 
         self.stopped = False
         self.target = None
 
-    def load_tree(self) -> None:
+    def load_tree(self, command_file_list) -> None:
         """
         Loads all files into command structure
         """
-        for file in self.command_file_list:
-            load_commands(self.root_node, self.global_commands, file)
+        for file in command_file_list:
+            load_commands(self.categories, self.global_commands, file)
 
-    @staticmethod
-    def make_path_string(path_list) -> str:
-        """
-        Joins given list and appends a ':'
-        Expects a list
-        """
-        return " / ".join(path_list) + ":"
+    def set_target(self, params) -> None:
+        self.target = (params[0].upper(), self.possible_targets[params[0]])
 
-    def set_target(self, target) -> None:
-        self.target = target
-
-    def print_help(self, node) -> None:
+    # should print info of root node (global commands and categories) and of the currently selected target
+    def print_help(self, params: list) -> None:
         """
         Prints the info and any children or parameters of the node.
         """
-        print("( " + node.name + " )")
-        print("\tInfo: " + node.command_info)
-        if node.parameter_list:
-            print("\tParameters: (" + (", ".join(node.parameter_list)) + ")")
-        elif len(node) > 0:
+        print("( HELP )")
+        print(
+            "\tPossible targets (name: category): {}".format(
+                ", ".join(
+                    "{}: {}".format(key, value.name)
+                    for key, value in self.possible_targets.items()
+                )
+            )
+        )
+        print(
+            "\tGlobal commands: {}".format(
+                ", ".join(command for command in self.global_commands.keys())
+            )
+        )
+
+        if self.target:
             print(
-                "\tPossible commands: {}".format(
-                    ", ".join(node[n].name.lower() for n in node.keys())
+                "\n\tCurrently selected {}: {}".format(
+                    self.target[1].name, self.target[0]
+                )
+            )
+            print(
+                "\tTarget specific commands: {}".format(
+                    ", ".join(command for command in self.target[1].keys())
                 )
             )
         else:
-            print("\tThis function requires no parameters and has no children")
-
-        print("\n\tCurrently selected robot: {}".format(self.target))
-
-    def go_back_in_tree(self) -> bool:
-        """
-        Go back one node in the tree structure. You cant go back when in root
-        """
-        if self.current_node.parent:
-            self.current_node = self.current_node.parent
-            return True
-        return False
-
-    def go_to_root(self) -> None:
-        """
-        Go to root in tree structure
-        """
-        self.current_node = self.root_node
+            print("\tNo target selected.")
 
     @staticmethod
     def ask_input(input_queue: queue.Queue, string="") -> None:
@@ -103,7 +101,7 @@ class CLIController:
         """
         Starts a new thread to make nonblocking input possible. And get the current location, after restart this is always just root
         """
-        path_string = self.make_path_string(self.current_node.get_branch_names()) + " "
+        path_string = "CLI: "
         self.input_thread = threading.Thread(
             target=self.ask_input, args=(self.input_queue, path_string)
         )
@@ -118,7 +116,7 @@ class CLIController:
         if not self.input_thread.isAlive() and self.input_queue.empty():
             self.start_thread()
         elif not self.input_queue.empty():
-            self.input_handler.handle_new_input(self.input_queue.get().split(" "))
+            self.input_handler.handle_input(self.input_queue.get().split(" "))
 
     def process(self) -> None:
         """
@@ -129,7 +127,7 @@ class CLIController:
 
         self.check_input()
 
-    def stop(self) -> None:
+    def stop(self, params=None) -> None:
         """
         Stops the CLIController
         """
