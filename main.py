@@ -8,6 +8,7 @@ from module.cli_controller import CLIController
 
 should_stop = False
 
+
 def main():
     module = CLIController(Comm(), ["modules/swarm_ui/module/commands.json"])
 

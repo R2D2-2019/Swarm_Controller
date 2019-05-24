@@ -10,7 +10,6 @@ from module.input_handler import input_handler
 
 
 class CLIController:
-
     def __init__(self, comm: BaseComm, command_file_list=None):
         """
         Filenames given have to be JSON files.
@@ -23,13 +22,13 @@ class CLIController:
         # These function as preserved keywords, do not use these names in commands
 
         self.global_commands = {
-            "EXIT":     self.stop,
-            "LEAVE":    self.stop,
-            "QUIT":     self.stop,
-            "Q":        self.stop,
-            "BACK":     self.go_back_in_tree,
-            "RETURN":   self.go_back_in_tree,
-            "ROOT":     self.go_to_root
+            "EXIT": self.stop,
+            "LEAVE": self.stop,
+            "QUIT": self.stop,
+            "Q": self.stop,
+            "BACK": self.go_back_in_tree,
+            "RETURN": self.go_back_in_tree,
+            "ROOT": self.go_to_root,
         }
         self.command_file_list = command_file_list
         self.load_tree()
@@ -39,7 +38,6 @@ class CLIController:
 
         self.stopped = False
         self.target = None
-
 
     def load_tree(self) -> None:
         """
@@ -54,7 +52,7 @@ class CLIController:
         Joins given list and appends a ':'
         Expects a list
         """
-        return ' / '.join(path_list) + ":"
+        return " / ".join(path_list) + ":"
 
     def set_target(self, target) -> None:
         self.target = target
@@ -63,12 +61,16 @@ class CLIController:
         """
         Prints the info and any children or parameters of the node.
         """
-        print('( ' + node.name + ' )')
+        print("( " + node.name + " )")
         print("\tInfo: " + node.command_info)
         if node.parameter_list:
             print("\tParameters: (" + (", ".join(node.parameter_list)) + ")")
         elif len(node) > 0:
-            print("\tPossible commands: {}".format(", ".join(node[n].name.lower() for n in node.keys())))
+            print(
+                "\tPossible commands: {}".format(
+                    ", ".join(node[n].name.lower() for n in node.keys())
+                )
+            )
         else:
             print("\tThis function requires no parameters and has no children")
 
@@ -83,12 +85,12 @@ class CLIController:
             return True
         return False
 
-
     def go_to_root(self) -> None:
         """
         Go to root in tree structure
         """
         self.current_node = self.root_node
+
     @staticmethod
     def ask_input(input_queue: queue.Queue, string="") -> None:
         """
@@ -102,7 +104,9 @@ class CLIController:
         Starts a new thread to make nonblocking input possible. And get the current location, after restart this is always just root
         """
         path_string = self.make_path_string(self.current_node.get_branch_names()) + " "
-        self.input_thread = threading.Thread(target=self.ask_input, args=(self.input_queue, path_string))
+        self.input_thread = threading.Thread(
+            target=self.ask_input, args=(self.input_queue, path_string)
+        )
         self.input_thread.daemon = True
         self.input_thread.start()
 
@@ -115,7 +119,6 @@ class CLIController:
             self.start_thread()
         elif not self.input_queue.empty():
             self.input_handler.handle_new_input(self.input_queue.get().split(" "))
-
 
     def process(self) -> None:
         """
