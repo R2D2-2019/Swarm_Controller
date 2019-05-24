@@ -47,7 +47,7 @@ class CLIController:
         # this needs to be requested from swarm, for now this is a mock
         self.possible_targets = {
             "123": self.categories["ROBOT"],
-            "321": self.categories["ROBOT"],
+            "321": self.categories["SWARM"],
         }
 
         self.stopped = False

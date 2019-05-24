@@ -62,26 +62,31 @@ class input_handler:
         Prints general information and information about the target,
         or information about a command if given as a parameter
         """
-
         # If a parameter is given this prints the information of that parameter
-        if params and self.cli_controller.target:
+        if params:
             if not self._check_amount_parameters(params, 1):
                 return
-            try:
-                node = self.cli_controller.target[1][params[0].upper()]
 
-                print("( {} )".format(node.name))
-                print("\t" + node.node_info)
-                print(
-                    "\n\tParameters (name: type): {}".format(
-                        ", ".join(
-                            "{}: {}".format(key, value) for key, value in node.items()
+            param = params[0].upper()
+            if param in self.cli_controller.global_commands:
+                print("\t" + self.cli_controller.global_commands[param].node_info)
+
+            elif self.cli_controller.target:
+                try:
+                    node = self.cli_controller.target[1][param]
+
+                    print("( {} )".format(node.name))
+                    print("\t" + node.node_info)
+                    print(
+                        "\n\tParameters (name: type): {}".format(
+                            ", ".join(
+                                "{}: {}".format(key, value) for key, value in node.items()
+                            )
                         )
                     )
-                )
-            except KeyError:
-                self._print_command_not_found(params[0])
-            return
+                except KeyError:
+                    self._print_command_not_found(param)
+                return
 
         # If no parameter is given it prints general information and the selected target's information
         print("( HELP )")
