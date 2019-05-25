@@ -112,7 +112,7 @@ class input_handler:
         print(
             "\tGlobal commands: {}".format(
                 ", ".join(
-                    command for command in self.cli_controller.global_commands.keys()
+                    map(str.lower, self.cli_controller.global_commands.keys())
                 )
             )
         )
@@ -125,9 +125,7 @@ class input_handler:
             )
             print(
                 "\tTarget specific commands: {}".format(
-                    ", ".join(
-                        command for command in self.cli_controller.target[1].keys()
-                    )
+                    ", ".join(map(str.lower, self.cli_controller.target[1].keys()))
                 )
             )
         else:
