@@ -1,10 +1,13 @@
 import json
 import inspect
+import re
 
 import common.frames
 
 from module.command_node import Node, Command
 from module.frame_functions import get_frames_with_description
+
+CAMEL_REGEX = re.compile("(?!^)([A-Z]+)")
 
 
 def add_frame_commands(node: Node, mod=common.frames) -> None:
@@ -20,7 +23,10 @@ def add_frame_commands(node: Node, mod=common.frames) -> None:
     # add all commands to root node
     for command in commands:
         # indexes everything of the frame name after 'Frame'
-        name = command[0][5:].upper()
+        name = command[0][5:]
+
+        # Converts the camelcase framenames to dashed names
+        name = CAMEL_REGEX.sub(r"-\1", name).upper()
 
         # get parameters from the frame class
         parameters = inspect.getfullargspec(command[1].set_data).annotations
