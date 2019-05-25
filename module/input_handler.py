@@ -78,6 +78,7 @@ class input_handler:
 
             param = params[0].upper()
             if param in self.cli_controller.global_commands:
+                print("( {} )".format(param))
                 print("\t" + self.cli_controller.global_commands[param].node_info)
 
             elif self.cli_controller.target:
@@ -96,7 +97,7 @@ class input_handler:
                     )
                 except KeyError:
                     self._print_command_not_found(param)
-                return
+            return
 
         # If no parameter is given it prints general information and the selected target's information
         print("( HELP )")
@@ -177,7 +178,11 @@ class input_handler:
         elif self.cli_controller.target:
             self._handle_category_command(command, params)
         else:
-            print("No target..")
+            self._print_command_not_found(command)
+            print(
+                """\tMaybe the command you were trying to execute is a target specific command,
+\tuse 'select' to select a target."""
+            )
 
     def handle_input(self, input_words: list) -> None:
         """
