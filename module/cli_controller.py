@@ -22,23 +22,19 @@ class CLIController:
 
         # These function as preserved keywords, do not use these names in commands
         stop = GlobalCommand("EXIT", self.stop, node_info="Exits the CLI interface.")
-        select = GlobalCommand(
-            "SELECT",
-            self.input_handler.handle_select,
-            node_info="Select a target on which to execute commands.",
-        )
         self.global_commands = {
             "EXIT": stop,
-            "LEAVE": stop,
             "QUIT": stop,
-            "Q": stop,
             "HELP": GlobalCommand(
                 "HELP",
                 self.input_handler.handle_help,
                 node_info="Prints general help or help of given parameter.",
             ),
-            "SET": select,
-            "SELECT": select,
+            "SELECT": GlobalCommand(
+                "SELECT",
+                self.input_handler.handle_select,
+                node_info="Select a target on which to execute commands.",
+            ),
         }
 
         self.categories = dict()
