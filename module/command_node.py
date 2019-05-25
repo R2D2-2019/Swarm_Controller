@@ -9,7 +9,7 @@ class Node(dict):
 
 
 class Command(Node):
-    def __init__(self, name: str, node_info: str="Currently none available"):
+    def __init__(self, name: str, node_info: str = "Currently none available"):
         super().__init__(name, node_info=node_info)
 
     def send(self, comm: BaseComm, params: list, destination: str) -> None:
@@ -20,10 +20,11 @@ class Command(Node):
         frame.set_data(self.name, " ".join(str(param) for param in params), destination)
         comm.send(frame)
 
+
 class GlobalCommand(Node):
-    def __init__(self, name: str, func, node_info: str='Currently none available'):
+    def __init__(self, name: str, func, node_info: str = "Currently none available"):
         super().__init__(name, node_info=node_info)
         self.func = func
 
     def execute(self, params: list):
-        self.func(params)
+        return self.func(params)

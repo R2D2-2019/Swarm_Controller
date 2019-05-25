@@ -7,7 +7,7 @@ from module.command_node import Node, Command
 from module.frame_functions import get_frames_with_description
 
 
-def add_frame_commands(node, mod=common.frames) -> None:
+def add_frame_commands(node: Node, mod=common.frames) -> None:
     """
     Adds all commands from the mod file
     """
@@ -32,22 +32,24 @@ def add_frame_commands(node, mod=common.frames) -> None:
         node["ROBOT"][name] = command
 
 
-def add_command_from_json(json_command, node, prohibited_words) -> None:
+def add_command_from_json(
+    json_command: dict, node: Node, prohibited_words: list
+) -> None:
     """
     add one json command to root node
     """
     name = json_command["name"].upper()
     category = json_command["category"].upper()
 
-    if prohibited_words:
-        prohibited_words = set(prohibited_words)
+    prohibited_words = map(str.upper, prohibited_words)
 
     if name in prohibited_words:
-        exit(
+        print(
             "Used keyword {} as command name. Using keywords is prohibited!".format(
-                json_command["name"]
+                name
             )
         )
+        return
 
     # Creates the caterogy if it doesn't already exist
     if category not in node:
@@ -62,7 +64,7 @@ def add_command_from_json(json_command, node, prohibited_words) -> None:
     node[category][name] = command
 
 
-def load_commands(node, prohibited_words=None, file=None) -> None:
+def load_commands(node: Node, prohibited_words: list = None, file: str = None) -> None:
     """
     Loads a single JSON file into the given node
     And loads all the frames from common.frames.py to the command structure

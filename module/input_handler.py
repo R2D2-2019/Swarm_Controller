@@ -33,7 +33,11 @@ class input_handler:
         return True
 
     @staticmethod
-    def _convert_type(convertable, convert_type):
+    def _convert_type(convertable: str, convert_type: type):
+        """
+        Converts the convertable into the convert_type,
+        when the conver_type is a bool the function will also evaluate "TRUE" and "FALSE".
+        """
         if convert_type is bool:
             if convertable.upper() == "TRUE":
                 convertable = True
@@ -47,7 +51,12 @@ class input_handler:
 
         return convertable
 
-    def handle_select(self, select_parameters) -> None:
+    def handle_select(self, select_parameters: list) -> None:
+        """
+        Handles the select command,
+        which allows the user to set the target from the list of possible targets.
+        Seting a target allows the user to execute commands on that target.
+        """
         if not self._check_amount_parameters(select_parameters, 1):
             return
         if not select_parameters[0] in self.cli_controller.possible_targets:
@@ -80,7 +89,8 @@ class input_handler:
                     print(
                         "\n\tParameters (name: type): {}".format(
                             ", ".join(
-                                "{}: {}".format(key, value) for key, value in node.items()
+                                "{}: {}".format(key, value)
+                                for key, value in node.items()
                             )
                         )
                     )
@@ -122,7 +132,7 @@ class input_handler:
         else:
             print("\n\tNo target selected.")
 
-    def _handle_category_command(self, command, params) -> None:
+    def _handle_category_command(self, command: str, params: list) -> None:
         """
         Handles all non-global commands. Returns false if failed or
         if a function has been executed(in this case no other commands can be executed after).

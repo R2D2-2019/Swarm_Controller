@@ -10,10 +10,11 @@ from module.input_handler import input_handler
 
 
 class CLIController:
-    def __init__(self, comm: BaseComm, command_file_list=None):
+    def __init__(self, comm: BaseComm, command_file_list: list):
         """
         Filenames given have to be JSON files.
         """
+
         self.comm = comm
         self.input_queue = queue.Queue()
         self.input_thread = threading.Thread()
@@ -53,18 +54,18 @@ class CLIController:
         self.stopped = False
         self.target = None
 
-    def load_tree(self, command_file_list) -> None:
+    def load_tree(self, command_file_list: list) -> None:
         """
         Loads all files into command structure
         """
         for file in command_file_list:
             load_commands(self.categories, self.global_commands, file)
 
-    def set_target(self, target) -> None:
+    def set_target(self, target: str) -> None:
         self.target = (target.upper(), self.possible_targets[target])
 
     @staticmethod
-    def ask_input(input_queue: queue.Queue, string="") -> None:
+    def ask_input(input_queue: queue.Queue, string: str = "") -> None:
         """
         Starts a new thread asking the user for input and writes this input to the given input_queue
         Optional string for input
@@ -101,7 +102,7 @@ class CLIController:
 
         self.check_input()
 
-    def stop(self, params=None) -> None:
+    def stop(self, params: list = None) -> None:
         """
         Stops the CLIController
         """
