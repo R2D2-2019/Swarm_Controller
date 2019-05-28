@@ -101,9 +101,9 @@ class input_handler:
         # If no parameter is given it prints general information and the selected target's information
         print("( HELP )")
         print(
-            "\tPossible targets (name: category): {}".format(
+            "\tPossible targets (category: name): {}".format(
                 ", ".join(
-                    "{}: {}".format(key, value.name)
+                    "{}: {}".format(value.name.lower(), key.lower())
                     for key, value in self.cli_controller.possible_targets.items()
                 )
             )
