@@ -1,0 +1,36 @@
+{
+  "commands": [
+    {
+      "target": "move-to-coordinate",
+      "category": "robot",
+      "parameters": [
+        "int x",
+        "int y"
+      ],
+      "info": "Moves the robot to given coordinate [x,y]."
+    },
+    {
+      "target": "get-robot-names",
+      "category": "robot",
+      "parameters": [
+      ],
+      "info": "Lists all controllable robots. These names will be the destination of the robot commands"
+    },
+    {
+      "target": "group",
+      "category": "swarm",
+      "parameters": [
+        "int x",
+        "int y"
+      ],
+      "info": "Group entire swarm around one location"
+    },
+    {
+      "target": "get-swarm-names",
+      "category": "swarm",
+      "parameters": [
+      ],
+      "info": "Lists all controllable swarms. These names will be the destination of the swarm commands"
+    }
+  ]
+}
