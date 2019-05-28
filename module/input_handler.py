@@ -85,7 +85,7 @@ class input_handler:
             if not self.check_amount_parameters(user_params, len(command_params)):
                 return False
 
-            # Validate if the user paramters are of the correct type.
+            # Validate if the user parameters are of the correct type.
             # Print invalid type if type is invalid, this code evaluates all parameters.
             correct_params = True
             for i, param in enumerate(command_params):
