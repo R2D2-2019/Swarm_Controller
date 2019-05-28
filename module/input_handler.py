@@ -1,5 +1,4 @@
-from module.command_node import NodeType
-from module.frame_functions import cast_and_send_ui_frame
+from module.command_node import Node, Command
 
 
 class input_handler:
@@ -7,50 +6,38 @@ class input_handler:
         self.cli_controller = cli_controller
 
     @staticmethod
-    def print_command_not_found(command: str) -> None:
+    def _print_command_not_found(command: str) -> None:
         """
         Prints command not found text with the command parameter.
         """
-        print("\tCommand '{}' not found, type 'help' for possible commands.".format(command))
+        print(
+            "\tCommand '{}' not found, type 'help' for possible commands.".format(
+                command
+            )
+        )
 
     @staticmethod
-    def check_amount_parameters(parameters: list, required_amount: int):
+    def _check_amount_parameters(parameters: list, required_amount: int) -> bool:
         """
         compares the length of the parameters list to the required amount,
         returns true when the length of the parameters is equal to the required amount
         prints to user if not enough or too many parameters
         """
         if len(parameters) < required_amount or len(parameters) > required_amount:
-            print("\tExpected {} parameters, got {}.".format(required_amount, len(parameters)))
+            print(
+                "\tExpected {} parameters, got {}.".format(
+                    required_amount, len(parameters)
+                )
+            )
             return False
-        return True
-
-    def handle_help(self, help_parameters):
-        try:
-            node = self.cli_controller.current_node
-
-            for param in help_parameters:
-                node = node[param.upper()]
-
-            self.cli_controller.print_help(node)
-        except IndexError:
-            self.cli_controller.print_help(self.cli_controller.current_node)
-        except KeyError:
-            self.print_command_not_found(param)
-
-    def handle_select(self, select_parameters) -> bool:
-        if not self.check_amount_parameters(select_parameters, 1):
-            return False
-        if not select_parameters[0]:
-            print("\tInvalid parameter '{}'".format(select_parameters[0]))
-            return False
-
-        self.cli_controller.set_target(select_parameters[0])
-        print("\tYou selected {}".format(select_parameters[0]))
         return True
 
     @staticmethod
-    def convert_type(convertable, convert_type):
+    def _convert_type(convertable: str, convert_type: type):
+        """
+        Converts the convertable into the convert_type,
+        when the conver_type is a bool the function will also evaluate "TRUE" and "FALSE".
+        """
         if convert_type is bool:
             if convertable.upper() == "TRUE":
                 convertable = True
@@ -64,70 +51,152 @@ class input_handler:
 
         return convertable
 
-    def handle_nonglobal_commands(self, user_word, user_command_list) -> bool:
+    def handle_select(self, select_parameters: list) -> None:
+        """
+        Handles the select command,
+        which allows the user to set the target from the list of possible targets.
+        Seting a target allows the user to execute commands on that target.
+        """
+        if not self._check_amount_parameters(select_parameters, 1):
+            return
+        if not select_parameters[0] in self.cli_controller.possible_targets:
+            print("\tInvalid target '{}'".format(select_parameters[0]))
+            return
+
+        self.cli_controller.set_target(select_parameters[0])
+        print("\tYou selected {}".format(select_parameters[0]))
+
+    def handle_help(self, params: list) -> None:
+        """
+        Prints general information and information about the target,
+        or information about a command if given as a parameter
+        """
+        # If a parameter is given this prints the information of that parameter
+        if params:
+            if not self._check_amount_parameters(params, 1):
+                return
+
+            param = params[0].upper()
+            if param in self.cli_controller.global_commands:
+                print("( {} )".format(param))
+                print("\t" + self.cli_controller.global_commands[param].node_info)
+            elif self.cli_controller.target:
+                try:
+                    node = self.cli_controller.target[1][param]
+
+                    print("( {} )".format(node.name))
+                    print("\t" + node.node_info)
+                    print(
+                        "\n\tParameters (name: type): {}".format(
+                            ", ".join(
+                                "{}: {}".format(key, value)
+                                for key, value in node.items()
+                            )
+                        )
+                    )
+                except KeyError:
+                    self._print_command_not_found(param)
+            return
+
+        # If no parameter is given it prints general information and the selected target's information
+        print("( HELP )")
+        print(
+            "\tPossible targets (name: category): {}".format(
+                ", ".join(
+                    "{}: {}".format(key, value.name)
+                    for key, value in self.cli_controller.possible_targets.items()
+                )
+            )
+        )
+        print(
+            "\tGlobal commands: {}".format(
+                ", ".join(
+                    command for command in self.cli_controller.global_commands.keys()
+                )
+            )
+        )
+
+        if self.cli_controller.target:
+            print(
+                "\n\tCurrently selected {}: {}".format(
+                    self.cli_controller.target[1].name, self.cli_controller.target[0]
+                )
+            )
+            print(
+                "\tTarget specific commands: {}".format(
+                    ", ".join(
+                        command for command in self.cli_controller.target[1].keys()
+                    )
+                )
+            )
+        else:
+            print("\n\tNo target selected.")
+
+    def _handle_category_command(self, command: str, params: list) -> None:
         """
         Handles all non-global commands. Returns false if failed or
         if a function has been executed(in this case no other commands can be executed after).
         Returns true if another command can be executed after this one
         """
+        category = self.cli_controller.target[1]
 
-        if user_word.upper() not in self.cli_controller.current_node.keys():
-            self.print_command_not_found(user_word)
-            return False
+        if command not in category:
+            self._print_command_not_found(command)
+            return
 
-        if self.cli_controller.current_node[user_word.upper()].type == NodeType.COMMAND:
-            if not self.cli_controller.target:
-                print("\tNo target selected.")
-                return False
-            user_params = user_command_list[user_command_list.index(user_word) + 1 :]
-            command_params = self.cli_controller.current_node[user_word.upper()].parameter_list
+        required_params = category[command]
 
-            if not self.check_amount_parameters(user_params, len(command_params)):
-                return False
+        if not self._check_amount_parameters(params, len(required_params)):
+            return
 
-            # Validate if the user parameters are of the correct type.
-            # Print invalid type if type is invalid, this code evaluates all parameters.
-            correct_params = True
-            for i, param in enumerate(command_params):
-                try:
-                    user_params[i] = self.convert_type(user_params[i], command_params[param])
-                except ValueError:
-                    print(
-                        "\tInvalid type for parameter {} '{}', expected '{}'".format(
-                            i, param, command_params[param]
-                        )
+        # Validate if the user paramters are of the correct type.
+        # Print invalid type if type is invalid, this code evaluates all parameters.
+        correct_params = True
+        for i, param in enumerate(required_params):
+            try:
+                params[i] = self._convert_type(params[i], required_params[param])
+            except ValueError:
+                print(
+                    "\tInvalid type for parameter {} '{}', expected '{}'".format(
+                        i, param, required_params[param]
                     )
-                    correct_params = False
+                )
+                correct_params = False
 
-            if correct_params:
-                print("\tSending command:", user_word, user_params, self.cli_controller.target)
-                # below function can currently not be called as there is no string packing support in python bus yet
-                # cast_and_send_ui_frame(self.cli_controller.comm, user_word, user_params, self.cli_controller.target)
-            return False
+        if not correct_params:
+            return
 
-        self.cli_controller.current_node = self.cli_controller.current_node[user_word.upper()]
-        return True
+        print("\tSending command:", command, params, self.cli_controller.target[0])
+        category[command].send(
+            self.cli_controller.comm, params, self.cli_controller.target[0]
+        )
 
-    def handle_new_input(self, input_commands) -> None:
+    def _handle_command(self, command: str, params: list):
+        if command in self.cli_controller.global_commands:
+            self.cli_controller.global_commands[command].execute(params)
+        elif self.cli_controller.target:
+            self._handle_category_command(command, params)
+        else:
+            self._print_command_not_found(command)
+            print(
+                """\tMaybe the command you were trying to execute is a target specific command,
+\tuse 'select' to select a target."""
+            )
+
+    def handle_input(self, input_words: list) -> None:
         """
         Execute a command depending on text entered
         """
-        for i, user_word in enumerate(input_commands):
-            # Help is a special case, we need to check this first
-            if user_word.upper() == "HELP":
-                help_parameters = input_commands[i + 1 :]
-                self.handle_help(help_parameters)
-                break
-            # set or select is also a special case
-            if user_word.upper() == "SET" or user_word.upper() == "SELECT":
-                self.handle_select(input_commands[i + 1 :])
-                break
+        command = []
+        while input_words:
+            word = input_words.pop(0)
 
-            # Step 3: Check for global commands
-            elif user_word.upper() in self.cli_controller.global_commands.keys():
-                self.cli_controller.global_commands[user_word.upper()]()
+            if word == "&&":
+                self._handle_command(command[0].upper(), command[1:])
+                command = []
+                continue
 
-            # Step 4: Check for location(in tree structure) specific commands
-            else:
-                if not self.handle_nonglobal_commands(user_word, input_commands):
-                    break
+            command.append(word)
+
+            if input_words == []:
+                self._handle_command(command[0].upper(), command[1:])
