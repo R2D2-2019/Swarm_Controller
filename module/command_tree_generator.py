@@ -66,7 +66,7 @@ def add_command_from_json(json_command, root_node, prohibited_words) -> None:
         if path_piece in current_node:
             current_node = current_node[path_piece]
         else:
-            # Creates the caterogy if it doesn't exist already
+            # Creates the category if it doesn't exist already
             new_node = Node(path_piece, NodeType.CATEGORY, current_node)
             new_node.set_parent(current_node)
             current_node[new_node.name] = new_node
@@ -88,12 +88,13 @@ def load_commands(root_node, prohibited_words=None, file=None) -> None:
     if file:
         with open(file, "r") as json_file:
             data = json.load(json_file)
-    try:
-        # Add all commands from previously collected data
-        for command in data["commands"]:
-            add_command_from_json(command, root_node, prohibited_words)
-    except KeyError as error:
-        print("Key {} was not found".format(error))
+            
+        try:
+            # Add all commands from previously collected data
+            for command in data["commands"]:
+                add_command_from_json(command, root_node, prohibited_words)
+        except KeyError as error:
+            print("Key {} was not found".format(error))
 
     # Add all commands from the cpp frames
     add_frame_commands(root_node)
