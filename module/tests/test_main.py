@@ -34,16 +34,16 @@ def test_add_frame_commands():
 
     assert list(root_node.keys()) == ["ROBOT"]
     assert list(root_node["ROBOT"].keys()) == [
-        "ACTIVITYLEDSTATE",
-        "DISPLAYFILLEDRECTANGLE",
+        "ACTIVITY-LED-STATE",
+        "DISPLAY-FILLED-RECTANGLE",
     ]
 
     for frame in root_node["ROBOT"].values():
         assert frame.node_info
 
-    assert root_node["ROBOT"]["ACTIVITYLEDSTATE"]["state"] is bool
+    assert root_node["ROBOT"]["ACTIVITY-LED-STATE"]["state"] is bool
 
-    for param in root_node["ROBOT"]["DISPLAYFILLEDRECTANGLE"].values():
+    for param in root_node["ROBOT"]["DISPLAY-FILLED-RECTANGLE"].values():
         assert param is int
 
 
