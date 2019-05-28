@@ -72,12 +72,12 @@ def load_commands(node: Node, prohibited_words: list = None, file: str = None) -
     if file:
         with open(file, "r") as json_file:
             data = json.load(json_file)
-    try:
-        # Add all commands from previously collected data
-        for command in data["commands"]:
-            add_command_from_json(command, node, prohibited_words)
-    except KeyError as error:
-        print("Key {} was not found".format(error))
+        try:
+            # Add all commands from previously collected data
+            for command in data["commands"]:
+                add_command_from_json(command, node, prohibited_words)
+        except KeyError as error:
+            print("Key {} was not found".format(error))
 
     # Add all commands from the cpp frames
     add_frame_commands(node)
