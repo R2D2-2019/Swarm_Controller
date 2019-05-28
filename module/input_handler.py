@@ -80,7 +80,6 @@ class input_handler:
             if param in self.cli_controller.global_commands:
                 print("( {} )".format(param))
                 print("\t" + self.cli_controller.global_commands[param].node_info)
-
             elif self.cli_controller.target:
                 try:
                     node = self.cli_controller.target[1][param]
