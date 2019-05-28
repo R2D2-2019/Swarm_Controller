@@ -101,9 +101,9 @@ class input_handler:
         # If no parameter is given it prints general information and the selected target's information
         print("( HELP )")
         print(
-            "\tPossible targets (name: category): {}".format(
+            "\tPossible targets (category: name): {}".format(
                 ", ".join(
-                    "{}: {}".format(key, value.name)
+                    "{}: {}".format(value.name.lower(), key.lower())
                     for key, value in self.cli_controller.possible_targets.items()
                 )
             )
@@ -119,7 +119,7 @@ class input_handler:
         if self.cli_controller.target:
             print(
                 "\n\tCurrently selected {}: {}".format(
-                    self.cli_controller.target[1].name, self.cli_controller.target[0]
+                    self.cli_controller.target[1].name.lower(), self.cli_controller.target[0].lower()
                 )
             )
             print(
@@ -164,10 +164,10 @@ class input_handler:
         if not correct_params:
             return
 
-        print("\tSending command:", command, params, self.cli_controller.target[0])
-        category[command].send(
-            self.cli_controller.comm, params, self.cli_controller.target[0]
-        )
+        print("\tSending command:", command.lower(), params, " to: ", self.cli_controller.target[0].lower())
+        #category[command].send(
+        #    self.cli_controller.comm, params, self.cli_controller.target[0]
+        #)
 
     def _handle_command(self, command: str, params: list):
         if command in self.cli_controller.global_commands:
