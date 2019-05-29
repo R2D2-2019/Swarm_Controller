@@ -96,6 +96,8 @@ class input_handler:
                     )
                 except KeyError:
                     self._print_command_not_found(param)
+            else:
+                self._print_command_not_found(param)
             return
 
         # If no parameter is given it prints general information and the selected target's information
@@ -187,14 +189,15 @@ class input_handler:
         """
         command = []
         while input_words:
-            word = input_words.pop(0)
+            word = input_words.pop(0).strip()
 
             if word == "&&":
                 self._handle_command(command[0].upper(), command[1:])
                 command = []
                 continue
 
-            command.append(word)
+            if word != "":
+                command.append(word)
 
             if input_words == []:
                 self._handle_command(command[0].upper(), command[1:])
