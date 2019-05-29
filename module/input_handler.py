@@ -96,6 +96,8 @@ class input_handler:
                     )
                 except KeyError:
                     self._print_command_not_found(param)
+            else:
+                self._print_command_not_found(param)
             return
 
         # If no parameter is given it prints general information and the selected target's information
@@ -165,6 +167,7 @@ class input_handler:
             return
 
         print("\tSending command:", command.lower(), params, " to: ", self.cli_controller.target[0].lower())
+        # cant be executed yet as python bus string frames are not working like intended yet
         #category[command].send(
         #    self.cli_controller.comm, params, self.cli_controller.target[0]
         #)
@@ -187,14 +190,15 @@ class input_handler:
         """
         command = []
         while input_words:
-            word = input_words.pop(0)
+            word = input_words.pop(0).strip()
 
             if word == "&&":
                 self._handle_command(command[0].upper(), command[1:])
                 command = []
                 continue
 
-            command.append(word)
+            if word != "":
+                command.append(word)
 
             if input_words == []:
                 self._handle_command(command[0].upper(), command[1:])
