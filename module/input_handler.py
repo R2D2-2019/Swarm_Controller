@@ -167,6 +167,7 @@ class input_handler:
             return
 
         print("\tSending command:", command.lower(), params, " to: ", self.cli_controller.target[0].lower())
+        # cant be executed yet as python bus string frames are not working like intended yet
         #category[command].send(
         #    self.cli_controller.comm, params, self.cli_controller.target[0]
         #)
