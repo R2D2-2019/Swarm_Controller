@@ -7,6 +7,7 @@ import common.frames
 from module.command_node import Node, Command
 from module.frame_functions import get_frames_with_description
 
+# Regex to convert camelcase strings to dashed (e.g. 'FrameMyCommand' becomes '-frame-my-command')
 CAMEL_REGEX = re.compile("(?!^)([A-Z]+)")
 
 
@@ -27,7 +28,7 @@ def add_frame_commands(node: Node, mod=common.frames) -> None:
         # indexes everything of the frame name after 'Frame'
         name = command[0][5:]
 
-        # Converts the camelcase framenames to dashed names
+        # Converts the camelcase framenames to dashed names (e.g. 'MyCommand' becomes 'my-command')
         name = CAMEL_REGEX.sub(r"-\1", name).upper()
 
         # get parameters from the frame class
