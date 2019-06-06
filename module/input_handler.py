@@ -1,8 +1,15 @@
 from module.command_node import Node, Command
+from module.cli_controller import CLIController
 
 
 class input_handler:
-    def __init__(self, cli_controller):
+    """
+    Handles input of the given cli_controller.
+    """
+    def __init__(self, cli_controller: CLIController):
+        """
+        cli_controller must be the parent controller and functions will be called on it.
+        """
         self.cli_controller = cli_controller
 
     @staticmethod

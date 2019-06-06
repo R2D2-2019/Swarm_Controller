@@ -12,7 +12,9 @@ CAMEL_REGEX = re.compile("(?!^)([A-Z]+)")
 
 def add_frame_commands(node: Node, mod=common.frames) -> None:
     """
-    Adds all commands from the mod file
+    Adds all commands from the mod file.
+    node is the node to which all the commands will be added.
+    mod is the module from which to add the frame commands.
     """
     # check if the robot category already exists, otherwise create it
     if not "ROBOT" in node:

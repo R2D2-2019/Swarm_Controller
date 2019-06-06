@@ -12,7 +12,27 @@ from module.input_handler import input_handler
 class CLIController:
     def __init__(self, comm: BaseComm, command_file_list: list):
         """
-        Filenames given have to be JSON files.
+        comm must be a BaseComm from the client.comm module (python-bus)
+
+        command_file_list must be a path to a JSON formatted file like such:
+
+        {
+            "commands": [
+                {
+                "name": "command_name",
+                "category": "command_category",
+                "parameters": [
+                    "type parameter_name",
+                    "type parameter_name"
+                ],
+                "info": "Explanation of the command, and how to use it."
+                },
+
+                {
+                    # next command formatted like the previous
+                }
+            ]
+        }
         """
 
         self.comm = comm
