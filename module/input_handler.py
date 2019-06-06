@@ -45,7 +45,8 @@ class input_handler:
     def _convert_type(convertable: str, convert_type: type):
         """
         Converts the convertable into the convert_type,
-        when the conver_type is a bool the function will also evaluate "TRUE" and "FALSE".
+        when the convert_type is a bool the function will also evaluate "TRUE" and "FALSE".
+        returns the type of convert_type
         """
         if convert_type is bool:
             if convertable.upper() == "TRUE":
@@ -65,6 +66,8 @@ class input_handler:
         Handles the select command,
         which allows the user to set the target from the list of possible targets.
         Seting a target allows the user to execute commands on that target.
+
+        select_parameters is a list containing strings of parameters
         """
         if not self._check_amount_parameters(select_parameters, 1):
             self._print_expected_parameters(1, len(select_parameters))
@@ -80,6 +83,8 @@ class input_handler:
         """
         Prints general information and information about the target,
         or information about a command if given as a parameter
+
+        params is a list containing strings of parameters
         """
         # If a parameter is given this prints the information of that parameter
         if params:
@@ -147,6 +152,9 @@ class input_handler:
         Handles all non-global commands. Returns false if failed or
         if a function has been executed(in this case no other commands can be executed after).
         Returns true if another command can be executed after this one
+
+        command is the command to be executed
+        params is a list containing strings of parameters
         """
         category = self.cli_controller.target[1]
 
@@ -190,6 +198,12 @@ class input_handler:
         # )
 
     def _handle_command(self, command: str, params: list):
+        """
+        Handles a command. It tries to locate the command and then call it using the given params.
+
+        command is the command to be handled
+        params is a list containing strings of parameters
+        """
         if command in self.cli_controller.global_commands:
             self.cli_controller.global_commands[command].execute(params)
         elif self.cli_controller.target:
@@ -204,6 +218,8 @@ class input_handler:
     def handle_input(self, input_words: list) -> None:
         """
         Execute a command depending on text entered
+
+        input_words is a list containing a string of user input
         """
         command = []
         while input_words:
