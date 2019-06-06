@@ -7,7 +7,7 @@ import common.frames
 from module.command_node import Node, Command
 from module.frame_functions import get_frames_with_description
 
-# Regex to convert camelcase strings to dashed (e.g. 'FrameMyCommand' becomes '-frame-my-command')
+# Regex to detect capital letters (for use in Camelcase to dashed)
 CAMEL_REGEX = re.compile("(?!^)([A-Z]+)")
 
 
