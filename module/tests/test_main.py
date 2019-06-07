@@ -96,9 +96,8 @@ def test_check_amount_parameters(capsys):
     output = input_handler._check_amount_parameters(lst, 1)
 
     assert output == False
-    assert capsys.readouterr().out == "\tExpected 1 parameters, got 2.\n"
 
-def test_conver_type():
+def test_convert_type():
     assert input_handler._convert_type("true", bool) == True
     assert input_handler._convert_type("false", bool) == False
     assert input_handler._convert_type("10", int) == 10

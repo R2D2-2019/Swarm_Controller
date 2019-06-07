@@ -7,12 +7,15 @@ import common.frames
 from module.command_node import Node, Command
 from module.frame_functions import get_frames_with_description
 
+# Regex to detect capital letters (for use in Camelcase to dashed)
 CAMEL_REGEX = re.compile("(?!^)([A-Z]+)")
 
 
 def add_frame_commands(node: Node, mod=common.frames) -> None:
     """
-    Adds all commands from the mod file
+    Adds all commands from the mod file.
+    node is the node to which all the commands will be added.
+    mod is the module from which to add the frame commands.
     """
     # check if the robot category already exists, otherwise create it
     if not "ROBOT" in node:
@@ -25,7 +28,7 @@ def add_frame_commands(node: Node, mod=common.frames) -> None:
         # indexes everything of the frame name after 'Frame'
         name = command[0][5:]
 
-        # Converts the camelcase framenames to dashed names
+        # Converts the camelcase framenames to dashed names (e.g. 'MyCommand' becomes 'my-command')
         name = CAMEL_REGEX.sub(r"-\1", name).upper()
 
         # get parameters from the frame class

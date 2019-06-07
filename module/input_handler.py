@@ -2,7 +2,14 @@ from module.command_node import Node, Command
 
 
 class input_handler:
+    """
+    Handles input of the given cli_controller.
+    """
+
     def __init__(self, cli_controller):
+        """
+        cli_controller must be the parent controller and functions will be called on it.
+        """
         self.cli_controller = cli_controller
 
     @staticmethod
@@ -19,24 +26,27 @@ class input_handler:
     @staticmethod
     def _check_amount_parameters(parameters: list, required_amount: int) -> bool:
         """
-        compares the length of the parameters list to the required amount,
-        returns true when the length of the parameters is equal to the required amount
-        prints to user if not enough or too many parameters
+        compares the length of the parameters list to the required amount.
+
+        returns true when the length of the parameters is equal to the required amount, else false
         """
         if len(parameters) < required_amount or len(parameters) > required_amount:
-            print(
-                "\tExpected {} parameters, got {}.".format(
-                    required_amount, len(parameters)
-                )
-            )
             return False
         return True
+
+    @staticmethod
+    def _print_expected_parameters(expected: int, got: int) -> None:
+        """
+        prints the string "Expected {} parameters, got {}." where expected and got are filled in to the {}
+        """
+        print("\tExpected {} parameters, got {}.".format(expected, got))
 
     @staticmethod
     def _convert_type(convertable: str, convert_type: type):
         """
         Converts the convertable into the convert_type,
-        when the conver_type is a bool the function will also evaluate "TRUE" and "FALSE".
+        when the convert_type is a bool the function will also evaluate "TRUE" and "FALSE".
+        returns the type of convert_type
         """
         if convert_type is bool:
             if convertable.upper() == "TRUE":
@@ -56,8 +66,11 @@ class input_handler:
         Handles the select command,
         which allows the user to set the target from the list of possible targets.
         Seting a target allows the user to execute commands on that target.
+
+        select_parameters is a list containing strings of parameters
         """
         if not self._check_amount_parameters(select_parameters, 1):
+            self._print_expected_parameters(1, len(select_parameters))
             return
         if not select_parameters[0] in self.cli_controller.possible_targets:
             print("\tInvalid target '{}'".format(select_parameters[0]))
@@ -70,10 +83,13 @@ class input_handler:
         """
         Prints general information and information about the target,
         or information about a command if given as a parameter
+
+        params is a list containing strings of parameters
         """
         # If a parameter is given this prints the information of that parameter
         if params:
             if not self._check_amount_parameters(params, 1):
+                self._print_expected_parameters(1, len(params))
                 return
 
             param = params[0].upper()
@@ -112,16 +128,15 @@ class input_handler:
         )
         print(
             "\tGlobal commands: {}".format(
-                ", ".join(
-                    map(str.lower, self.cli_controller.global_commands.keys())
-                )
+                ", ".join(map(str.lower, self.cli_controller.global_commands.keys()))
             )
         )
 
         if self.cli_controller.target:
             print(
                 "\n\tCurrently selected {}: {}".format(
-                    self.cli_controller.target[1].name.lower(), self.cli_controller.target[0].lower()
+                    self.cli_controller.target[1].name.lower(),
+                    self.cli_controller.target[0].lower(),
                 )
             )
             print(
@@ -137,6 +152,9 @@ class input_handler:
         Handles all non-global commands. Returns false if failed or
         if a function has been executed(in this case no other commands can be executed after).
         Returns true if another command can be executed after this one
+
+        command is the command to be executed
+        params is a list containing strings of parameters
         """
         category = self.cli_controller.target[1]
 
@@ -147,6 +165,7 @@ class input_handler:
         required_params = category[command]
 
         if not self._check_amount_parameters(params, len(required_params)):
+            self._print_expected_parameters(len(required_params), len(params))
             return
 
         # Validate if the user paramters are of the correct type.
@@ -166,13 +185,25 @@ class input_handler:
         if not correct_params:
             return
 
-        print("\tSending command:", command.lower(), params, " to: ", self.cli_controller.target[0].lower())
+        print(
+            "\tSending command:",
+            command.lower(),
+            params,
+            " to: ",
+            self.cli_controller.target[0].lower(),
+        )
         # cant be executed yet as python bus string frames are not working like intended yet
-        #category[command].send(
+        # category[command].send(
         #    self.cli_controller.comm, params, self.cli_controller.target[0]
-        #)
+        # )
 
     def _handle_command(self, command: str, params: list):
+        """
+        Handles a command. It tries to locate the command and then call it using the given params.
+
+        command is the command to be handled
+        params is a list containing strings of parameters
+        """
         if command in self.cli_controller.global_commands:
             self.cli_controller.global_commands[command].execute(params)
         elif self.cli_controller.target:
@@ -187,6 +218,8 @@ class input_handler:
     def handle_input(self, input_words: list) -> None:
         """
         Execute a command depending on text entered
+
+        input_words is a list containing a string of user input
         """
         command = []
         while input_words:
