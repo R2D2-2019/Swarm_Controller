@@ -136,6 +136,8 @@ class CLIController:
     def stop(self, params: list = None) -> None:
         """
         Stops the CLIController
+        params is a required parameters because stop is a global command, 
+        params is not used in this function
 
         @param list
         """
