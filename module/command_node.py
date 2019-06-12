@@ -7,6 +7,9 @@ class Node(dict):
     def __init__(self, name: str, node_info: str ="Currently none available"):
         """
         A dictionary with a name and node_info variable.
+
+        @param str
+        @param str
         """
         self.name = name
         self.node_info = node_info
@@ -16,6 +19,9 @@ class Command(Node):
     def __init__(self, name: str, node_info: str = "Currently none available"):
         """
         A Node which can send a frame (using the send method) according to it's required parameters.
+
+        @param str
+        @param str
         """
         super().__init__(name, node_info=node_info)
 
@@ -25,6 +31,10 @@ class Command(Node):
         comm must be a BaseComm from the client.comm module (python-bus)
         params is the list of parameters to be passed in to the frame
         destination is the name of the target (robot / swarm)
+
+        @param BaseComm
+        @param list
+        @param str
         """
         frame = FrameUiCommand()
         frame.set_data(self.name, " ".join(str(param) for param in params), destination)
@@ -35,6 +45,10 @@ class GlobalCommand(Node):
     def __init__(self, name: str, func: Callable, node_info: str = "Currently none available"):
         """
         A node which can execute its stored function (func) with given parameters using the execute method.
+
+        @param str
+        @param Callable
+        @param str
         """
         super().__init__(name, node_info=node_info)
         self.func = func
@@ -42,5 +56,7 @@ class GlobalCommand(Node):
     def execute(self, params: list):
         """
         Executes self.func using the given parameters.
+
+        @param list
         """
         return self.func(params)

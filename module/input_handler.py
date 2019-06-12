@@ -9,6 +9,8 @@ class input_handler:
     def __init__(self, cli_controller):
         """
         cli_controller must be the parent controller and functions will be called on it.
+
+        @param cli_controller
         """
         self.cli_controller = cli_controller
 
@@ -16,6 +18,8 @@ class input_handler:
     def _print_command_not_found(command: str) -> None:
         """
         Prints command not found text with the command parameter.
+
+        @param str
         """
         print(
             "\tCommand '{}' not found, type 'help' for possible commands.".format(
@@ -29,6 +33,9 @@ class input_handler:
         compares the length of the parameters list to the required amount.
 
         returns true when the length of the parameters is equal to the required amount, else false
+
+        @param list
+        @param int
         """
         if len(parameters) < required_amount or len(parameters) > required_amount:
             return False
@@ -38,6 +45,9 @@ class input_handler:
     def _print_expected_parameters(expected: int, got: int) -> None:
         """
         prints the string "Expected {} parameters, got {}." where expected and got are filled in to the {}
+
+        @param int
+        @param int
         """
         print("\tExpected {} parameters, got {}.".format(expected, got))
 
@@ -47,6 +57,9 @@ class input_handler:
         Converts the convertable into the convert_type,
         when the convert_type is a bool the function will also evaluate "TRUE" and "FALSE".
         returns the type of convert_type
+
+        @param str
+        @param type
         """
         if convert_type is bool:
             if convertable.upper() == "TRUE":
@@ -68,6 +81,8 @@ class input_handler:
         Seting a target allows the user to execute commands on that target.
 
         select_parameters is a list containing strings of parameters
+
+        @param list
         """
         if not self._check_amount_parameters(select_parameters, 1):
             self._print_expected_parameters(1, len(select_parameters))
@@ -85,6 +100,8 @@ class input_handler:
         or information about a command if given as a parameter
 
         params is a list containing strings of parameters
+
+        @param list
         """
         # If a parameter is given this prints the information of that parameter
         if params:
@@ -155,6 +172,9 @@ class input_handler:
 
         command is the command to be executed
         params is a list containing strings of parameters
+        
+        @param str
+        @param list
         """
         category = self.cli_controller.target[1]
 
@@ -203,6 +223,9 @@ class input_handler:
 
         command is the command to be handled
         params is a list containing strings of parameters
+
+        @param str
+        @param list
         """
         if command in self.cli_controller.global_commands:
             self.cli_controller.global_commands[command].execute(params)
@@ -220,6 +243,8 @@ class input_handler:
         Execute a command depending on text entered
 
         input_words is a list containing a string of user input
+
+        @param list
         """
         command = []
         while input_words:

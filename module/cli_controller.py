@@ -33,6 +33,9 @@ class CLIController:
                 }
             ]
         }
+
+        @param BaseComm
+        @param list
         """
 
         self.comm = comm
@@ -75,11 +78,18 @@ class CLIController:
     def load_tree(self, command_file_list: list) -> None:
         """
         Loads all files into command structure
+
+        @param list
         """
         for file in command_file_list:
             load_commands(self.categories, self.global_commands, file)
 
     def set_target(self, target: str) -> None:
+        """
+        sets the target
+
+        @param str
+        """
         self.target = (target.upper(), self.possible_targets[target])
 
     @staticmethod
@@ -87,6 +97,9 @@ class CLIController:
         """
         Starts a new thread asking the user for input and writes this input to the given input_queue
         Optional string for input
+
+        @param Queue
+        @param str
         """
         input_queue.put(input(string))
 
@@ -123,6 +136,8 @@ class CLIController:
     def stop(self, params: list = None) -> None:
         """
         Stops the CLIController
+
+        @param list
         """
         if self.input_thread:
             self.input_thread.join()

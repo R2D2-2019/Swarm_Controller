@@ -16,6 +16,9 @@ def add_frame_commands(node: Node, mod=common.frames) -> None:
     Adds all commands from the mod file.
     node is the node to which all the commands will be added.
     mod is the module from which to add the frame commands.
+
+    @param Node
+    @param frames
     """
     # check if the robot category already exists, otherwise create it
     if not "ROBOT" in node:
@@ -46,6 +49,10 @@ def add_command_from_json(
 ) -> None:
     """
     add one json command to root node
+
+    @param dict
+    @param Node
+    @param list
     """
     name = json_command["name"].upper()
     category = json_command["category"].upper()
@@ -77,6 +84,10 @@ def load_commands(node: Node, prohibited_words: list = None, file: str = None) -
     """
     Loads a single JSON file into the given node
     And loads all the frames from common.frames.py to the command structure
+
+    @param Node 
+    @param list
+    @param str
     """
     if file:
         with open(file, "r") as json_file:
