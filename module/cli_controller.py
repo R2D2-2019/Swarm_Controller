@@ -12,7 +12,7 @@ from module.input_handler import input_handler
 class CLIController:
     def __init__(self, comm: BaseComm, command_file_list: list):
         """
-        comm must be a BaseComm from the client.comm module (python-bus)
+        starts the command line interface for r2d2 robots and swarms
 
         command_file_list must be a path to a JSON formatted file like such:
 
@@ -34,8 +34,8 @@ class CLIController:
             ]
         }
 
-        @param BaseComm
-        @param list
+        @param comm must be a BaseComm from the client.comm module (python-bus)
+        @param command_file_list this is list with paths to the .json files where non-frame commands are stored
         """
 
         self.comm = comm
@@ -79,7 +79,7 @@ class CLIController:
         """
         Loads all files into command structure
 
-        @param list
+        @param command_file_list is a list of .json file locations with extra commands in them, 
         """
         for file in command_file_list:
             load_commands(self.categories, self.global_commands, file)
@@ -88,7 +88,7 @@ class CLIController:
         """
         sets the target
 
-        @param str
+        @param target is the name of the target to select to send commands to
         """
         self.target = (target.upper(), self.possible_targets[target])
 
@@ -98,8 +98,8 @@ class CLIController:
         Starts a new thread asking the user for input and writes this input to the given input_queue
         Optional string for input
 
-        @param Queue
-        @param str
+        @param input_queue is a queue where all user input will be written to, this will later be read by input_handler
+        @param string optional command that executes when starting the thread
         """
         input_queue.put(input(string))
 
@@ -139,7 +139,7 @@ class CLIController:
         params is a required parameters because stop is a global command, 
         params is not used in this function
 
-        @param list
+        @param params is not used in this function
         """
         if self.input_thread:
             self.input_thread.join()
