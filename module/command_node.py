@@ -8,8 +8,8 @@ class Node(dict):
         """
         A dictionary with a name and node_info variable.
 
-        @param str
-        @param str
+        @param name is the name of the node
+        @param node_info is the info of the node that will be displayed when typing help
         """
         self.name = name
         self.node_info = node_info
@@ -20,21 +20,21 @@ class Command(Node):
         """
         A Node which can send a frame (using the send method) according to it's required parameters.
 
-        @param str
-        @param str
+        @param name is the name of the node
+        @param node_info is the info of the node that will be displayed when typing help
         """
         super().__init__(name, node_info=node_info)
 
     def send(self, comm: BaseComm, params: list, destination: str) -> None:
         """
         Creates and sends a FrameUiCommand with parameters frame_name, params and destination.
-        comm must be a BaseComm from the client.comm module (python-bus)
-        params is the list of parameters to be passed in to the frame
-        destination is the name of the target (robot / swarm)
+        
+        
+        
 
-        @param BaseComm
-        @param list
-        @param str
+        @param comm must be a BaseComm from the client.comm module (python-bus)
+        @param params is the list of parameters to be passed in to the frame
+        @param destination is the name of the target (robot / swarm)
         """
         frame = FrameUiCommand()
         frame.set_data(self.name, " ".join(str(param) for param in params), destination)
@@ -46,9 +46,9 @@ class GlobalCommand(Node):
         """
         A node which can execute its stored function (func) with given parameters using the execute method.
 
-        @param str
-        @param Callable
-        @param str
+        @param name is the name of the node
+        @param func is the function that will be executed when using the execute function
+        @param node_info is the info of the node that will be displayed when typing help
         """
         super().__init__(name, node_info=node_info)
         self.func = func
@@ -57,6 +57,6 @@ class GlobalCommand(Node):
         """
         Executes self.func using the given parameters.
 
-        @param list
+        @param params are all the parameters that will be sent with func
         """
         return self.func(params)

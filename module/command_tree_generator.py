@@ -14,11 +14,11 @@ CAMEL_REGEX = re.compile("(?!^)([A-Z]+)")
 def add_frame_commands(node: Node, mod=common.frames) -> None:
     """
     Adds all commands from the mod file.
-    node is the node to which all the commands will be added.
-    mod is the module from which to add the frame commands.
+    
+   
 
-    @param Node
-    @param frames
+    @param node is the node to which all the commands will be added.
+    @param mod is the module from which to add the frame commands.
     """
     # check if the robot category already exists, otherwise create it
     if not "ROBOT" in node:
@@ -50,9 +50,9 @@ def add_command_from_json(
     """
     add one json command to root node
 
-    @param dict
-    @param Node
-    @param list
+    @param json_command is a parsed json command
+    @param node is the parent node where a new node will be created
+    @param prohibited_words is a list with words that are already in use, and thus will cause an error when trying to overwrite one
     """
     name = json_command["name"].upper()
     category = json_command["category"].upper()
@@ -85,9 +85,9 @@ def load_commands(node: Node, prohibited_words: list = None, file: str = None) -
     Loads a single JSON file into the given node
     And loads all the frames from common.frames.py to the command structure
 
-    @param Node 
-    @param list
-    @param str
+    @param node is the parent node where a new node will be created
+    @param prohibited_words is a list with words that are already in use, and thus will cause an error when trying to overwrite one
+    @param file is a path to a .json file where non-frame commands are stored
     """
     if file:
         with open(file, "r") as json_file:

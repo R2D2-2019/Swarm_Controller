@@ -10,7 +10,7 @@ class input_handler:
         """
         cli_controller must be the parent controller and functions will be called on it.
 
-        @param cli_controller
+        @param cli_controller is the controller of which functions will be called when handeling them
         """
         self.cli_controller = cli_controller
 
@@ -19,7 +19,7 @@ class input_handler:
         """
         Prints command not found text with the command parameter.
 
-        @param str
+        @param command is command name to print
         """
         print(
             "\tCommand '{}' not found, type 'help' for possible commands.".format(
@@ -34,8 +34,8 @@ class input_handler:
 
         returns true when the length of the parameters is equal to the required amount, else false
 
-        @param list
-        @param int
+        @param parameters is a list with all additional parameters
+        @param required_amount is the amount of parameters needed to return True
         """
         if len(parameters) < required_amount or len(parameters) > required_amount:
             return False
@@ -46,8 +46,8 @@ class input_handler:
         """
         prints the string "Expected {} parameters, got {}." where expected and got are filled in to the {}
 
-        @param int
-        @param int
+        @param expected is the amount of expected commands
+        @param got is the amount of received commands
         """
         print("\tExpected {} parameters, got {}.".format(expected, got))
 
@@ -58,8 +58,8 @@ class input_handler:
         when the convert_type is a bool the function will also evaluate "TRUE" and "FALSE".
         returns the type of convert_type
 
-        @param str
-        @param type
+        @param convertable is the string that needs to be converted
+        @param convert_type is the type to convert to
         """
         if convert_type is bool:
             if convertable.upper() == "TRUE":
@@ -80,9 +80,9 @@ class input_handler:
         which allows the user to set the target from the list of possible targets.
         Seting a target allows the user to execute commands on that target.
 
-        select_parameters is a list containing strings of parameters
+        
+        @param select_parameters is a list containing strings of parameters
 
-        @param list
         """
         if not self._check_amount_parameters(select_parameters, 1):
             self._print_expected_parameters(1, len(select_parameters))
@@ -99,9 +99,7 @@ class input_handler:
         Prints general information and information about the target,
         or information about a command if given as a parameter
 
-        params is a list containing strings of parameters
-
-        @param list
+        @param params is a list containing strings of parameters
         """
         # If a parameter is given this prints the information of that parameter
         if params:
@@ -169,12 +167,9 @@ class input_handler:
         Handles all non-global commands. Returns false if failed or
         if a function has been executed(in this case no other commands can be executed after).
         Returns true if another command can be executed after this one
-
-        command is the command to be executed
-        params is a list containing strings of parameters
         
-        @param str
-        @param list
+        @param command is the command to be executed
+        @param params is a list containing strings of parameters
         """
         category = self.cli_controller.target[1]
 
@@ -221,11 +216,8 @@ class input_handler:
         """
         Handles a command. It tries to locate the command and then call it using the given params.
 
-        command is the command to be handled
-        params is a list containing strings of parameters
-
-        @param str
-        @param list
+        @param command is the command to be handled
+        @param params is a list containing strings of parameters
         """
         if command in self.cli_controller.global_commands:
             self.cli_controller.global_commands[command].execute(params)
@@ -242,9 +234,7 @@ class input_handler:
         """
         Execute a command depending on text entered
 
-        input_words is a list containing a string of user input
-
-        @param list
+        @param input_words is a list containing a string of user input
         """
         command = []
         while input_words:
