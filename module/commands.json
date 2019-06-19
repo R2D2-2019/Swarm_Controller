@@ -1,7 +1,7 @@
 {
   "commands": [
     {
-      "target": "move-to-coordinate",
+      "name": "move-to-coordinate",
       "category": "robot",
       "parameters": [
         "int x",
@@ -10,14 +10,14 @@
       "info": "Moves the robot to given coordinate [x,y]."
     },
     {
-      "target": "get-robot-names",
+      "name": "get-robot-names",
       "category": "robot",
       "parameters": [
       ],
       "info": "Lists all controllable robots. These names will be the destination of the robot commands"
     },
     {
-      "target": "group",
+      "name": "group",
       "category": "swarm",
       "parameters": [
         "int x",
@@ -26,7 +26,7 @@
       "info": "Group entire swarm around one location"
     },
     {
-      "target": "get-swarm-names",
+      "name": "get-swarm-names",
       "category": "swarm",
       "parameters": [
       ],

@@ -1,29 +1,28 @@
 import json
 import inspect
+import re
 
 import common.frames
 
-from module.command_node import NodeType, Node
+from module.command_node import Node, Command
 from module.frame_functions import get_frames_with_description
 
-
-def add_command(parent, name, parameters, description) -> None:
-    """
-    Add one command with all the required information
-    """
-    target_node = Node(name, NodeType.COMMAND, parameter_list=parameters, command_info=description)
-    target_node.set_parent(parent)
-    parent[target_node.name] = target_node
+# Regex to detect capital letters (for use in Camelcase to dashed)
+CAMEL_REGEX = re.compile("(?!^)([A-Z]+)")
 
 
-def add_frame_commands(root_node, mod=common.frames) -> None:
+def add_frame_commands(node: Node, mod=common.frames) -> None:
     """
-    Adds all commands from the mod file
+    Adds all commands from the mod file.
+    
+   
+
+    @param node is the node to which all the commands will be added.
+    @param mod is the module from which to add the frame commands.
     """
-    # check if robot already exists, otherwise create it
-    if not "ROBOT" in root_node:
-        root_node["ROBOT"] = Node("ROBOT", NodeType.CATEGORY, root_node)
-    current_node = root_node["ROBOT"]
+    # check if the robot category already exists, otherwise create it
+    if not "ROBOT" in node:
+        node["ROBOT"] = Node("ROBOT")
 
     commands = get_frames_with_description(mod)
 
@@ -32,69 +31,73 @@ def add_frame_commands(root_node, mod=common.frames) -> None:
         # indexes everything of the frame name after 'Frame'
         name = command[0][5:]
 
+        # Converts the camelcase framenames to dashed names (e.g. 'MyCommand' becomes 'my-command')
+        name = CAMEL_REGEX.sub(r"-\1", name).upper()
+
         # get parameters from the frame class
         parameters = inspect.getfullargspec(command[1].set_data).annotations
         description = command[1].DESCRIPTION
 
-        add_command(current_node, name, parameters, description)
+        command = Command(name, description)
+        command.update(parameters)
+
+        node["ROBOT"][name] = command
 
 
-def add_command_from_json(json_command, root_node, prohibited_words) -> None:
+def add_command_from_json(
+    json_command: dict, node: Node, prohibited_words: list
+) -> None:
     """
     add one json command to root node
+
+    @param json_command is a parsed json command
+    @param node is the parent node where a new node will be created
+    @param prohibited_words is a list with words that are already in use, and thus will cause an error when trying to overwrite one
     """
+    name = json_command["name"].upper()
+    category = json_command["category"].upper()
 
-    if prohibited_words:
-        prohibited_words = set(prohibited_words)
+    prohibited_words = map(str.upper, prohibited_words)
 
-    json_command["target"] = json_command["target"].upper()
-    current_node = root_node
-
-    # Per path checking if it has a child
-    json_command["category"] = json_command["category"].upper()
-    for path_piece in json_command["category"].split(" "):
-        if path_piece in set(prohibited_words):
-            exit(
-                "Used keyword {} as target. Using keywords is prohibited!".format(
-                    json_command["target"]
-                )
+    if name in prohibited_words:
+        print(
+            "Used keyword {} as command name. Using keywords is prohibited!".format(
+                name
             )
+        )
+        return
 
-        # If the current path info already exists, traverse the tree
-        # Else, add the missing link
+    # Creates the caterogy if it doesn't already exist
+    if category not in node:
+        node[category] = Node(category)
 
-        if path_piece in current_node:
-            current_node = current_node[path_piece]
-        else:
-            # Creates the category if it doesn't exist already
-            new_node = Node(path_piece, NodeType.CATEGORY, current_node)
-            new_node.set_parent(current_node)
-            current_node[new_node.name] = new_node
-            current_node = new_node
-
-    # After all the missing links in the tree are made, add the command
-    parameters = dict()
+    # Add the command to the category
+    command = Command(name, json_command["info"])
     for parameter in json_command["parameters"]:
         parameter = parameter.split()
-        parameters[parameter[1]] = eval(parameter[0])
-    add_command(current_node, json_command["target"], parameters, json_command["info"])
+        command[parameter[1]] = eval(parameter[0])
+
+    node[category][name] = command
 
 
-def load_commands(root_node, prohibited_words=None, file=None) -> None:
+def load_commands(node: Node, prohibited_words: list = None, file: str = None) -> None:
     """
-    Loads a single JSON file into command structure
+    Loads a single JSON file into the given node
     And loads all the frames from common.frames.py to the command structure
+
+    @param node is the parent node where a new node will be created
+    @param prohibited_words is a list with words that are already in use, and thus will cause an error when trying to overwrite one
+    @param file is a path to a .json file where non-frame commands are stored
     """
     if file:
         with open(file, "r") as json_file:
             data = json.load(json_file)
-            
         try:
             # Add all commands from previously collected data
             for command in data["commands"]:
-                add_command_from_json(command, root_node, prohibited_words)
+                add_command_from_json(command, node, prohibited_words)
         except KeyError as error:
             print("Key {} was not found".format(error))
 
     # Add all commands from the cpp frames
-    add_frame_commands(root_node)
+    add_frame_commands(node)
