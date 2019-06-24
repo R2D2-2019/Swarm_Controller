@@ -75,14 +75,15 @@ class input_handler:
         return convertable
 
     def handle_get_targets(self, params: list) -> None:
-            """
-            Handldes the get targets command.
-            Currently only prints already known robot names,
-            but once available should request robot names from SMM
-        
-            @param params not used here, but is required as it is a global commands
-            """
-        print("\tPossible targets (category: name): \n{}".format(
+        """
+        Handldes the get targets command.
+        Currently only prints already known robot names,
+        but once available should request robot names from SMM
+
+        @param params not used here, but is required as it is a global commands
+        """
+        print(
+            "\tPossible targets (category: name): \n{}".format(
                 "\n".join(
                     "\t{}: {}".format(value.name.lower(), key.lower())
                     for key, value in self.cli_controller.possible_targets.items()
