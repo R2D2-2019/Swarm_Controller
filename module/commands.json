@@ -10,13 +10,6 @@
       "info": "Moves the robot to given coordinate [x,y]."
     },
     {
-      "name": "get-robot-names",
-      "category": "robot",
-      "parameters": [
-      ],
-      "info": "Lists all controllable robots. These names will be the destination of the robot commands"
-    },
-    {
       "name": "group",
       "category": "swarm",
       "parameters": [
