@@ -58,6 +58,11 @@ class CLIController:
                 self.input_handler.handle_select,
                 node_info="Select a target on which to execute commands.",
             ),
+            "GET-TARGET-NAMES": GlobalCommand(
+                "GET-TARGET-NAMES",
+                self.input_handler.handle_get_targets,
+                node_info="get all usable robot names",
+            )
         }
 
         self.categories = dict()
