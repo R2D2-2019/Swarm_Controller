@@ -58,10 +58,10 @@ class CLIController:
                 self.input_handler.handle_select,
                 node_info="Select a target on which to execute commands.",
             ),
-            "GET-TARGET-NAMES": GlobalCommand(
-                "GET-TARGET-NAMES",
+            "GET-TARGETS": GlobalCommand(
+                "GET-TARGETS",
                 self.input_handler.handle_get_targets,
-                node_info="get all usable robot names",
+                node_info="Get all usable robot names.",
             )
         }
 
