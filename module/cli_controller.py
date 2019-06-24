@@ -61,7 +61,7 @@ class CLIController:
             "GET-TARGETS": GlobalCommand(
                 "GET-TARGETS",
                 self.input_handler.handle_get_targets,
-                node_info="Get all usable robot names.",
+                node_info="Get all usable targets from Swarm Management.",
             )
         }
 
