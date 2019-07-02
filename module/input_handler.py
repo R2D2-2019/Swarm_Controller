@@ -257,7 +257,7 @@ class input_handler:
         while input_words:
             word = input_words.pop(0).strip()
 
-            if word == "&&":
+            if word == "&&" and len(command) > 0:
                 self._handle_command(command[0].upper(), command[1:])
                 command = []
                 continue
@@ -265,5 +265,5 @@ class input_handler:
             if word != "":
                 command.append(word)
 
-            if input_words == []:
+            if input_words == [] and len(command) > 0:
                 self._handle_command(command[0].upper(), command[1:])
