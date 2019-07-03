@@ -262,7 +262,7 @@ class input_handler:
                 command = []
                 continue
 
-            if word != "":
+            if word not in ["", "&&"]:
                 command.append(word)
 
             if input_words == [] and len(command) > 0:
