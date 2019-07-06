@@ -58,6 +58,11 @@ class CLIController:
                 self.input_handler.handle_select,
                 node_info="Select a target on which to execute commands.",
             ),
+            "GET-TARGETS": GlobalCommand(
+                "GET-TARGETS",
+                self.input_handler.handle_get_targets,
+                node_info="Get all usable targets from Swarm Management.",
+            )
         }
 
         self.categories = dict()
